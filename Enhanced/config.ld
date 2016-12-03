@@ -2,7 +2,8 @@ format = 'markdown'
 project = 'CommandLua'
 title = 'Command Lua Documentation'
 template = true
-style='!pale'
+--style='!pale'
+style='!fixed'
 --readme = '.\\tutorials'
 --file = { ".\\mock" } 
 --kind_names={topic='Tutorials',module='Reference'}
@@ -14,5 +15,7 @@ no_lua_ref=true
 new_type('Selector','Selector tables',false) 
 new_type('Wrapper','Wrapper/Descriptor tables',false) 
 new_type('DataType','Data types',false) 
+new_type('dummy','dummy',true) 
 --examples = {'.\\examples', exclude = {'examples/slow.lua'}}
 examples = {'.\\examples'}
+wrap=true
