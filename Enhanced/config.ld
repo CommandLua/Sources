@@ -12,8 +12,8 @@ not_luadoc=true
 sort=true
 custom_tags={'remark',title='Remarks'}
 no_lua_ref=true
-new_type('Selector','Selector tables',false) 
-new_type('Wrapper','Wrapper/Descriptor tables',false) 
+new_type('Selector','Selector',false) 
+new_type('Wrapper','Wrapper/Descriptor',false) 
 new_type('DataType','Data types',false) 
 new_type('dummy','dummy',true) 
 --examples = {'.\\examples', exclude = {'examples/slow.lua'}}
