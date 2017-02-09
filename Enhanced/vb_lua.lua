@@ -26,6 +26,9 @@
 --
 --Example: <br>without the new error handling, the script below would probably terminate after the SE_AddMission() and the rest of script would not run.<br> local mission = ScenEdit_AddMission('USA','Marker strike','strike',{type='land'})<br>if mission == nil then<br> if \_errnum\_ ~= 0 then print('Failed to add:' .. \_errmsg\_) else print('Something else') end<br> else print(mission)<br>...do some more command lua stuff...<br>end<br>
 --
+--
+--<b>Release: 1.11.SR7 </b>
+--
 
 
 --[[-- Selects a doctrine.
@@ -902,13 +905,28 @@ function ScenEdit_SetSidePosture(sideAName, sideBName, posture) end
 @usage ScenEdit_FillMagsForLoadout('{unit='RAF Lakenheath', loadoutid=45162, quantity=12}')
 ]]
 
+--[[-- Unit damage.
+ The component table list consists of entries for each component, identified by guid and new level. Special cases: <br>
+ - if guid is 'type', then you can set a type of component to be damaged,<br>
+ - if damageLevel is 'none', then the component will be repaired.
+@usage components={{'16a883a2-8e7f-4313-aae7-0af644c16337','none'},{'rudder','Medium'},{'type',type='sensor',1}}}')
+
+@Selector DamageOptions
+@field[type=string] side 
+@field[type=string] unitname 
+@field[type=string] guid 
+@field[type=string] fires 
+@field[type=string] flood 
+@field[type={ table }] components Table of component damage setting { guid, damageLevel }
+]]
+
 --[[-- Set unit damage.
  ... for components on unit.
 
 @function ScenEdit_SetUnitDamage(options)
-@param[DamageOptions] options 
+@param[type=DamageOptions] options 
 @return[type=Component] The unit's components object
-@usage ScenEdit_SetUnitDamage('{side='SideA',unitname='Ship',fires=1,components={{'rudder','medium'},{'type',type='sensor',1}}}')
+@usage ScenEdit_SetUnitDamage('{side='SideA', unitname='Ship', fires=1, components={ {'rudder','Medium'}, {'type',type='sensor',1} } }')
 ]]
 
 --[[--
@@ -981,7 +999,7 @@ SideSelector = {
  ... for components on unit.
 
 @function ScenEdit_GetSideOptions(options)
-@param[DamageOptions] options 
+@param[type=SideSelector] options 
 @return[type=SideOption] The side options
 @usage ScenEdit_GetSideOptions({side='SideA'})
 ]]
@@ -1099,7 +1117,7 @@ Note that a unit and it's contact GUIDs are different for the same physical unit
 Fetches a contact based on a selector.
 
 This function is mostly identical to @{ScenEdit_GetUnit} except that if references contacts on a side, 
-
+
 @param[type=ContactSelector] contact The contact to select. Must be defined by a side and contact GUID for that side.
 @return[type=Contact] A contact descriptor if it or nil otherwise.
 @usage ScenEdit_GetContact({side="United States", guid="c4114322-900c-428d-a3e3-0af701e81a7a"})
@@ -1192,7 +1210,7 @@ function ScenEdit_SetUnitSide(sidedesc) end
 @param[type=string] *unitname The name/GUID of unit with magazine
 @param[type=string] *guid GUID of the unit with magazine
 @param[type=string] mag_guid The magazine GUID
-@param[type=string] wpn_dbid The weapon database ID
+@param[type=string] wpn_dbid The weapon database ID
 @param[type=number] number Number to add
 @param[type=number] maxcap Maximum capacity of the weapon to store
 @param[type=bool] remove If true, this will debuct the number of weapons
@@ -1248,7 +1266,7 @@ function ScenEdit_AddWeaponToUnitMagazine(descriptor)
 
 --[[-- Attack options.
 
-@Wrapper AttackOptions
+@Wrapper AttackOptions
 @field[type=string] mode Targeting mode "AutoTargeted"|"0", "ManualWeaponAlloc"|"1"
 @field[type=number] mount The attacker's mount DBID
 @field[type=number] weapon The attacker's weapon DBID
@@ -1422,6 +1440,33 @@ function ScenEdit_PlayerSide() end
 function ScenEdit_EndScenario() end
 
 
+--[[-- Dump scenario events.
+   .. useful for checking. Also writes a file to the scenario folder
+@return[type=xml] Dump of events with trigger/condition/action
+@function Tool_DumpEvents()
+]]
+
+
+--[[-- Emulates no console.
+   .. useful running event code in the console and seeing how it behaves as an 'event'
+@field[type=boolean] mode If True, then run as if event; if False, then turn back on console
+@return[type=boolean] If interactive
+@function Tool_EmulateNoConsole(mode)
+]]
+
+
+--[[-- Get range between points.
+
+ The points can be a GUID of a unit/contact or a latitude/longitude point.
+@usage Tool_Range('8269b881-20ce-4f2e-baa0-6823e46d55a4','004aa55d-d553-428d-a727-26853737c8f4' )
+@usage Tool_Range( {latitude='33.1991547589118', longitude='138.376876749942'}, '8269b881-20ce-4f2e-baa0-6823e46d55a4' )
+@field[type=table|string] fromHere
+@field[type=table|string] toHere
+@return[type=number] The horizontal distance in NM
+@function Tool_Range(fromHere, toHere)
+]]
+
+
 --[[-- Magazine.
 
  Note that when dealing with a magazine in a unit, it may constist of one or more actual magazine 'blocks'. 
@@ -1503,10 +1548,11 @@ function ScenEdit_EndScenario() end
 @field[type=string]  weaponstate  Message on unit weapon status. [READONLY]
 @field[type=number]  manualSpeed  Manual desired speed. [READONLY]
 @field[type=bool]  manualAlitude  Manual altiude. [READONLY]
+@field[type={ table  }]  damage  Table {dp,flood,fires,startDp} of start and current DP, flood and fire level. [READONLY]
 @field[type={ Magazine }]  magazines  A table of magazines (with weapon loads) in the unit or group. Can be updated by @{ScenEdit_AddWeaponToUnitMagazine} [READONLY]
 @field[type={ Mount }]  mounts  A table of mounts (with weapon loads) in the unit or group. Can be updated by @{ScenEdit_AddReloadsToUnit} [READONLY]
 @field[type={ Component }]  components  A table of components on the unit.  [READONLY]
-@field[type={ side,guid,name }]  ascontact  A table of this unit seen from other sides ({side,guid,name} as a contact).  [READONLY]
+@field[type={ table }]  ascontact  A table {side,guid,name} of this unit seen from the other sides (as contacts).  [READONLY]
 @field[type=bool] refuel Trigger the unit to attempt an UNREP
 @field[type={ Weather } ] weather Table of weather parameters (temp, rainfall, underrain, seastate)
 @field[type=method] delete() Immediately removes unit object
@@ -1682,7 +1728,7 @@ td { padding: .5em; }
 @field[type=string] transitDepthSubmarine
 @field[type=string] stationThrottleSubmarine
 @field[type=string] stationDepthSubmarine
-@field[type=string] transitThrottleShip
+@field[type=string] transitThrottleShip
 @field[type=string] stationThrottleShip
 @field[type=Size] flightSize
 @field[type=string] minAircraftReq
