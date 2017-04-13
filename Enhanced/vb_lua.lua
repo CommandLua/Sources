@@ -24,12 +24,21 @@
 --<u><b>Error handling</b></u><br>
 --Usually when a Lua script fails, an error is thrown that ends the script at that point. While this may be okay in most cases, it is not often desired. <br>Whenever a Command Lua function gets an error, it will normally return a 'nil', and the error message will be available as a Lua global variables; '\_errmsg\_' will have the last error message, '\_errfnc\_' the Command Lua function that gave the error, and '\_errnum\_' the error code (0 is no error, and any value >0 will be an error). Thus if you get back a 'nil', you can check to see if that is due to an error or no data.
 --
---Example: <br>without the new error handling, the script below would probably terminate after the SE_AddMission() and the rest of script would not run.<br> local mission = ScenEdit_AddMission('USA','Marker strike','strike',{type='land'})<br>if mission == nil then<br> if \_errnum\_ ~= 0 then print('Failed to add:' .. \_errmsg\_) else print('Something else') end<br> else print(mission)<br>...do some more command lua stuff...<br>end<br>
+--Example: <br>without the new error handling, the script below would probably terminate after the SE_AddMission() and the rest of script would not run.<br> local mission = ScenEdit_AddMission('USA','Marker strike','strike',{type='land'})<br>if mission == nil then<br>&emsp;if \_errnum\_ ~= 0 then print('Failed to add:' .. \_errmsg\_) else print('Something else') end<br>else<br>&emsp;print(mission)<br>&emsp;do some more command lua stuff...<br>end<br>
+--
+--Note:
+--Due to how errors are now handle from SR7, if a command fails in the console window, it will show an error. If the command runs outside the console (as in an event script), it will not fail with a visible error but return a nil or  or some other value.
+--One issue with commands running in an event is that sometimes they fail with an in-game message that actually stops the rest of the script from running. Now, these event scripts will run without any in-game message showing, and the designer should check the result of the command and handle any error condition, and let the remaining script run as needed.
+--
+--My intent is have all command errors behave in the same fashion in the console window; and the command errors outside a console behave without stopping the script. Which requires the designer to cater for the specific error conditions.
+--
+--To emulate the expected outcome from an event, put 'Tool_EmulateNoConsole(true)' at the start of the script to be tested; it is not required in the event code as the script is already not running in a console.
+--
+--Note also, that the Lua history log should also record the event script errors.
 --
 --
---<b>Release: 1.11.SR7 </b>
+--<b>Release: 1.12 </b>
 --
-
 
 --[[-- Selects a doctrine.
  .. for on a side, group, mission, or unit
@@ -358,7 +367,7 @@ function ScenEdit_ImportInst(side, filename) end
 @param[type=string] MissionNameOrId The mission name
 @return[type=bool] True if mission has been removed.
 @usage local mission = ScenEdit_AddMission('USA','Marker strike','strike',{type='land'})
-]]
+]]
 
 ]]
 
@@ -926,7 +935,7 @@ function ScenEdit_SetSidePosture(sideAName, sideBName, posture) end
 @function ScenEdit_SetUnitDamage(options)
 @param[type=DamageOptions] options 
 @return[type=Component] The unit's components object
-@usage ScenEdit_SetUnitDamage('{side='SideA', unitname='Ship', fires=1, components={ {'rudder','Medium'}, {'type',type='sensor',1} } }')
+@usage ScenEdit_SetUnitDamage({side='SideA', unitname='Ship', fires=1, components={ {'rudder','Medium'}, {'type',type='sensor',1} } })
 ]]
 
 --[[--
@@ -954,13 +963,21 @@ function ScenEdit_SetSidePosture(sideAName, sideBName, posture) end
 function ScenEdit_SetEMCON(type, name, emcon)end
 
 --[[--
-Opens a message box with the given string.
+Show a message box with a passed string.
 
 @param[type=string] string The string to display to the user
 @param[type=num] style The style of the message box
-@return button number.
+@return button number pressed.
 ]]
 function ScenEdit_MsgBox(string, style) end
+
+--[[--
+Open an input box with the passed prompt.
+
+@param[type=string] string The string to display to the user
+@return Data entered into box
+]]
+function ScenEdit_InputBox(string) end
 
 
 --[[--
@@ -1117,7 +1134,7 @@ Note that a unit and it's contact GUIDs are different for the same physical unit
 Fetches a contact based on a selector.
 
 This function is mostly identical to @{ScenEdit_GetUnit} except that if references contacts on a side, 
-
+
 @param[type=ContactSelector] contact The contact to select. Must be defined by a side and contact GUID for that side.
 @return[type=Contact] A contact descriptor if it or nil otherwise.
 @usage ScenEdit_GetContact({side="United States", guid="c4114322-900c-428d-a3e3-0af701e81a7a"})
@@ -1286,6 +1303,24 @@ function ScenEdit_AddWeaponToUnitMagazine(descriptor)
 function  ScenEdit_AttackContact(attackerID, contactId, options) end
 
 
+--[[-- Add side. 
+ ... 
+
+@param[type={ table } ] table The side
+@return[type=Side] 
+]]
+function  ScenEdit_AddSide(table) end
+
+
+--[[-- Remove side 
+ from play. This removes ALL units and contacts. 
+
+@param[type={ table } ] table The side
+@return[type=Side] 
+]]
+function  ScenEdit_RemoveSide(table) end
+
+
 --[[-- Get unit details 
 
 This will get the information about an active unit or a contact unit
@@ -1351,13 +1386,33 @@ function World_GetElevation(location) end
 function World_GetCircleFromPoint(table) end
 
 
---[[-- The Unit that fired the current event trigger.
+--[[-- Activating Unit 
+ .. that triggered the current Event.
 Otherwise, a nil is returned.
+
+ Note that UnitX() can also be used as a shortcut for ScenEdit_UnitX()
+@usage ScenEdit_SetUnitDamage({side=UnitX().side, unitname=UnitX().name, fires=1, components={ {'rudder','Medium'}, {'type',type='sensor',1} } })
 
 @return[type=Unit] The triggering unit
 @usage local unit = ScenEdit_UnitX()
 ]]
 function ScenEdit_UnitX() end
+
+
+--[[-- Detecting Unit 
+ ... from a Unit Detected event trigger.
+Otherwise, a nil is returned.
+
+ Note that UnitY() can also be used as a shortcut for ScenEdit_UnitY()
+@usage ScenEdit_SetUnitDamage({side=UnitY().side, unitname=UnitY().name, fires=1, components={ {'rudder','Medium'}, {'type',type='sensor',1} } })
+
+@return[type={ table }] The detecting unit and sensors used as { unit = {unit object}, sensor = {[1] = {name, type}, [2] = {name, type}, etc} }
+@usage local by = ScenEdit_UnitY()
+  print('Y:'); print( by)
+  print('Detected by: ');print( by.unit.name .. ' of type ' .. by.unit.type ..' from ' ..  by.unit.side)
+  print('Sensor: ');print( by.sensor[1].name .. ' of type ' ..  by.sensor[1].type);
+]]
+function ScenEdit_UnitY() end
 
 
 --[[-- Get the current scenario time.
@@ -1532,12 +1587,11 @@ function ScenEdit_EndScenario() end
 @field[type=Throttle] throttle The unit's current throttle setting.
 @field[type=bool] autodetectable True if the unit is automatically detected.
 @field[type=bool] holdposition True if the unit should hold.
-@field[type=bool] holdfire True if the unit should not fire .
+@field[type={ table}] holdfire Doctrine WCS setting for {air,surface,subsurface,land}. [READONLY]
 @field[type=number] heading The unit's heading .
 @field[type=string] proficiency The unit proficiency, "Novice"|0, "Cadet"|1,"Regular"|2, "Veteran"|3, "Ace"|4.
 @field[type=string] newname If changing existing unit, the unit's new name .
 @field[type={ LatLon }] course The unit's course, as a table of lat/lon pairs
-@field[type=bool] RTB Trigger the unit to return to base
 @field[type={ Fuel }] fuel A table of fuel types used by unit.
 @field[type=Mission] mission The unit's assigned mission. Can be changed by setting to the Mission name or guid (calls ScenEdit_AssignUnitToMission)
 @field[type=Group] group The unit's group (if applicable). Can be changed assigning an existing or new name. It will try to create a group if new (experimental)
@@ -1553,11 +1607,16 @@ function ScenEdit_EndScenario() end
 @field[type={ Mount }]  mounts  A table of mounts (with weapon loads) in the unit or group. Can be updated by @{ScenEdit_AddReloadsToUnit} [READONLY]
 @field[type={ Component }]  components  A table of components on the unit.  [READONLY]
 @field[type={ table }]  ascontact  A table {side,guid,name} of this unit seen from the other sides (as contacts).  [READONLY]
-@field[type=bool] refuel Trigger the unit to attempt an UNREP
 @field[type={ Weather } ] weather Table of weather parameters (temp, rainfall, underrain, seastate)
 @field[type=method] delete() Immediately removes unit object
 @field[type=method] filterOnComponent(`type`) Filters unit on `type` of component and returns a @{Component} table.
 @field[type=method] rangetotarget('contactid') Calculate flat distance to a contact location
+ ScenEdit only
+@field[type=bool] refuel Trigger the unit to attempt an UNREP
+@field[type=bool] RTB Trigger the unit to return to base
+@field[type=bool] moveto  Set a desired alt/depth instead of jumping to actual
+@field[type=string|number]  manualSpeed Desired speed or 'OFF' to turn off manual mode
+@field[type=bool]  manualAlitude  To turn on/off manual mode
     
 ]]
 
@@ -1728,7 +1787,7 @@ td { padding: .5em; }
 @field[type=string] transitDepthSubmarine
 @field[type=string] stationThrottleSubmarine
 @field[type=string] stationDepthSubmarine
-@field[type=string] transitThrottleShip
+@field[type=string] transitThrottleShip
 @field[type=string] stationThrottleShip
 @field[type=Size] flightSize
 @field[type=string] minAircraftReq
@@ -1857,6 +1916,9 @@ td { padding: .5em; }
 @field[type=bool] strikeUseGroupSize True if minimum size required
 @field[type=bool] strikeAutoPlanner True if activated
 @field[type=bool] strikePreplan True if pre-planned target list only
+@field[type=number] strikeRadarUasge Radar usage
+@field[type=number] strikeMinDist  Strike minimum distance
+@field[type=number] strikeMaxDist  Strike maximum distance
 ]]
 
 --[[-- CargoMission.

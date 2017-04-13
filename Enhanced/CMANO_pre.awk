@@ -25,9 +25,21 @@ print "--"
 print "--<u><b>Error handling</b></u><br>"
 print "--Usually when a Lua script fails, an error is thrown that ends the script at that point. While this may be okay in most cases, it is not often desired. <br>Whenever a Command Lua function gets an error, it will normally return a 'nil', and the error message will be available as a Lua global variables; '\\_errmsg\\_' will have the last error message, '\\_errfnc\\_' the Command Lua function that gave the error, and '\\_errnum\\_' the error code (0 is no error, and any value >0 will be an error). Thus if you get back a 'nil', you can check to see if that is due to an error or no data."
 print "--"
-print "--Example: <br>without the new error handling, the script below would probably terminate after the SE_AddMission() and the rest of script would not run.<br> local mission = ScenEdit_AddMission('USA','Marker strike','strike',{type='land'})<br>if mission == nil then<br> if \\_errnum\\_ ~= 0 then print('Failed to add:' .. \\_errmsg\\_) else print('Something else') end<br> else print(mission)<br>...do some more command lua stuff...<br>end<br>"
+print "--Example: <br>without the new error handling, the script below would probably terminate after the SE_AddMission() and the rest of script would not run.<br> local mission = ScenEdit_AddMission('USA','Marker strike','strike',{type='land'})<br>if mission == nil then<br>&emsp;if \\_errnum\\_ ~= 0 then print('Failed to add:' .. \\_errmsg\\_) else print('Something else') end<br>else<br>&emsp;print(mission)<br>&emsp;do some more command lua stuff...<br>end<br>"
 print "--"
-print
+print "--Note:"
+print "--Due to how errors are now handle from SR7, if a command fails in the console window, it will show an error. If the command runs outside the console (as in an event script), it will not fail with a visible error but return a nil or "" or some other value."
+print "--One issue with commands running in an event is that sometimes they fail with an in-game message that actually stops the rest of the script from running. Now, these event scripts will run without any in-game message showing, and the designer should check the result of the command and handle any error condition, and let the remaining script run as needed."
+print "--"
+print "--My intent is have all command errors behave in the same fashion in the console window; and the command errors outside a console behave without stopping the script. Which requires the designer to cater for the specific error conditions."
+print "--"
+print "--To emulate the expected outcome from an event, put 'Tool_EmulateNoConsole(true)' at the start of the script to be tested; it is not required in the event code as the script is already not running in a console."
+print "--"
+print "--Note also, that the Lua history log should also record the event script errors."
+print "--"
+print "--"
+print "--<b>Release: 1.12 </b>"
+print "--"
 }
 {print $0}
 
