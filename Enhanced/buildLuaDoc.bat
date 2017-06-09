@@ -10,6 +10,9 @@
 @echo Home folder = %MYHOME%
 @echo Using temporary folder = %TEMP%
 @call ldoc_start.bat -c %MYHOME%/config.ld -l %MYHOME% -d %DESTN% %MYHOME%/vb_lua.lua
+@cp %DESTN%\index.html %TEMP%
+@rem replace <em></em> with _ as these are being incoorectly set by ldoc
+@awk '{ gsub(/^\074em\076+/,"_");print }' %TEMP%\index.html |awk '{ gsub(/^\074\/em\076+/,"_");print }' > %DESTN%\index.html
 @rem cleanup temporary files
 @del %TEMP%\vb_lua.txt %TEMP%\vb_lua2.txt %TEMP%\vb_lua3.txt 2>%TEMP%/null
 @set PATH=%SAVEPATH%

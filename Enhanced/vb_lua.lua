@@ -37,7 +37,7 @@
 --Note also, that the Lua history log should also record the event script errors.
 --
 --
---<b>Release: 1.12 </b>
+--<b>Release: 1.12 [plus] </b>
 --
 
 --[[-- Selects a doctrine.
@@ -230,58 +230,22 @@ function ScenEdit_SetDoctrineWRA(selector, options) end
 ]]
 
 
-
---[[-- Event.
-
-@Selector Event
-@param[type=string] EventDescriptionOrID The description or ID of the event
-@param[type=string] guid The GUID of the event [READONLY]
-@param[type=bool] isactive If the action is active for the player
-@param[type=bool] isrepeatable If the event can be triggered multiple times
-@param[type=bool] isshown If the action is suppressed in the log window
-@param[type=string] description If specified, the new description for the event. Not desirable, as this will cause any instances where the old description is used, to fail.
-@param[type=number] probability If specified, a new probability for the event
-@param[type=string] newname If specified, the new name for the event
-@param[type={ Triggers }] triggers A table of triggers for this event [READONLY]
-@param[type={ Conditions }] conditionss A table of conditions for this event [READONLY]
-@param[type={ Actions }] actions A table of actions for this event [READONLY]
-]]
-
-
---[[-- Sets the properties of an event.
-
-
-@param[type=string] EventDescriptionOrID The event to modify
-@param[type=Event] options The event options to modify
-@return[type=bool] If true, successful.
-]]
-function ScenEdit_SetEvent(EventDescriptionOrID, options)end
-
-
---[[-- Event update.
-
-@Selector EventUpdate
-@param[type=string] type What to update (add\_condition,remove\_condition,replace\_condition,add\_action,remove\_action,replace\_action)
-@param[type=string] description The description of the Lua script  (can use GUID for existing item in remove/replace)
-@param[type=string] script The Lua script
-]]
-
---[[-- Sets the Lua script(s) of an event.
-
-
-@param[type=string] EventDescriptionOrID The event nam/GUID to update
-@param[type={EventUpdate}] options The event options 
-@return[type=table|bool] Table of Lua script event (new or previous values)
-]]
-function ScenEdit_UpdateEvent(EventDescriptionOrID, options)end
-
 --[[-- Gets the properties of an event.
 
 
 @param[type=string] EventDescriptionOrID The event to retrieve
+@param[type=number] level The detail required: 0 - full event,  (limit return to 1 - triggers, 2 - conditions, 3 - actions, 4 - event)
 @return[type=Event] The event details
 ]]
-function ScenEdit_GetEvent(EventDescriptionOrID)end
+function ScenEdit_GetEvent(EventDescriptionOrID, level)end
+
+--[[-- Gets all events.
+
+
+@param[type=number] level The detail required: 0 - full event,  (limit return to 1 - triggers, 2 - conditions, 3 - actions, 4 - event)
+@return[type= { Event} ] Table of event details
+]]
+function ScenEdit_GetEvents( level)end
 
 
 --[[--
@@ -319,6 +283,127 @@ function ScenEdit_GetSpecialAction(action_info)end
 @return[type=string] "Ok" on execution or nothing.
 ]]
 
+
+
+--[[-- Event update.
+
+@Selector EventUpdate
+@param[type=string] ID The GUID of the event [READONLY]
+@param[type=string] Description If specified, the new description for the event
+@param[type=string] NewName If specified, the new name of the event
+@param[type=bool] IsActive If the event is active
+@param[type=bool] IsRepeatable If the event can occur multiple times
+@param[type=bool] IsShown If the event is shown in message log
+@param[type=integer] Probability Chance of it happening
+@param[type=string] Mode Operation to do - 'add', 'update' (default) SE_SetEvent()
+]]
+
+--[[-- Sets the attributes of an event.
+
+
+@param[type=string] EventDescriptionOrID The event name/GUID to perform operation on
+@param[type={ EventUpdate }] options The event options 
+@return[type={ table } ] Table of event options (new or previous value)
+]]
+function ScenEdit_SetEvent(EventDescriptionOrID, options)end
+
+
+--[[-- Trigger update.
+
+@Selector TriggerUpdate
+@param[type=string] ID The GUID of the trigger [READONLY]
+@param[type=string] Description Description or GUID of trigger
+@param[type=string] NewName If specified, the new name of the trigger
+@param[type=string] Mode Operation to do - 'list', 'add', 'remove', 'update' (default) SE_Set...()
+@param[type=string] Type Type of trigger [required only for 'add' option]
+@param[type=various] Other values apply to Type of trigger.
+]]
+
+--[[-- Sets the attributes of a trigger.
+
+
+@param[type={ TriggerUpdate }] options The trigger options 
+@return[type={ table } ] Table of trigger options (new or previous value)
+]]
+function ScenEdit_SetTrigger( options)end
+
+
+--[[-- Condition update.
+
+@Selector ConditionUpdate
+@param[type=string] ID The GUID of the condition [READONLY]
+@param[type=string] Description Description or GUID of condition
+@param[type=string] NewName If specified, the new name of the condition
+@param[type=string] Mode Operation to do - 'list', 'add', 'remove', 'update' (default) SE_Set...()
+@param[type=string] Type Type of condition [required only for 'add' option]
+@param[type=various] Other values apply to Type of condition.
+]]
+
+--[[-- Sets the attributes of an condition.
+
+
+@param[type={ ConditionUpdate }] options The condition options 
+@return[type={ table } ] Table of condition options (new or previous value)
+]]
+function ScenEdit_SetCondition( options)end
+
+
+--[[-- Action update.
+
+@Selector ActionUpdate
+@param[type=string] ID The GUID of the action [READONLY]
+@param[type=string] Description Description or GUID of action
+@param[type=string] NewName If specified, the new name of the action
+@param[type=string] Mode Operation to do - 'list', 'add', 'remove', 'update' (default) SE_Set...()
+@param[type=string] Type Type of action [required only for 'add' option]
+@param[type=various] Other values apply to Type of action.
+]]
+
+--[[-- Sets the attributes of an action.
+
+
+@param[type={ ActionUpdate }] options The action options 
+@return[type={ table } ] Table of action options (new or previous value)
+]]
+function ScenEdit_SetAction( options)end
+
+
+--[[-- Event Trigger/Condition/Action update.
+
+@Selector EventTCAUpdate
+@param[type=string] GUID The GUID of the trigger
+@param[type=string] Description The description or ID of the T/C/A
+@param[type=string] Mode Operation to do - 'add', 'remove', replace', 'update' (default) SE_Set...()
+]]
+
+--[[-- Sets the attributes of a T/C/A.
+
+
+@param[type=string] EventDescriptionOrID The trigger name/GUID to perform operation on
+@param[type={ EventTCAUpdate }] options The options 
+@return[type={ table } ] Table of options (new or previous value)
+]]
+function ScenEdit_SetEventTrigger(EventDescriptionOrID, options)end
+]]
+
+--[[-- Sets the attributes of a T/C/A.
+
+
+@param[type=string] EventDescriptionOrID The condition name/GUID to perform operation on
+@param[type={ EventTCAUpdate }] options The options 
+@return[type={ table } ] Table of options (new or previous value)
+]]
+function ScenEdit_SetEventCondition(EventDescriptionOrID, options)end
+]]
+
+--[[-- Sets the attributes of a T/C/A.
+
+
+@param[type=string] EventDescriptionOrID The action name/GUID to perform operation on
+@param[type={ EventTCAUpdate }] options The options 
+@return[type={ table } ] Table of options (new or previous value)
+]]
+function ScenEdit_SetEventAction(EventDescriptionOrID, options)end
 
 --[[--
 Imports an inst file.
@@ -367,7 +452,7 @@ function ScenEdit_ImportInst(side, filename) end
 @param[type=string] MissionNameOrId The mission name
 @return[type=bool] True if mission has been removed.
 @usage local mission = ScenEdit_AddMission('USA','Marker strike','strike',{type='land'})
-]]
+]]
 
 ]]
 
@@ -803,7 +888,7 @@ The 'UnitX' can be used as the unit descriptor
 @param[type=string] unitname The name/GUID of the unit to assign
 @param[type=string] mission The mission name/GUID to use
 @param[type=bool] escort [Default=False] If the mission is a strike one, then assign unit to the 'Escort' for the strike
-@return[type=boolean] True/False for Successful/Failure
+@return[type=boolean] True/False for Successful/Failure
 @usage ScenEdit_AssignUnitToMission("Bar #1", "Strike")
 ]]
 function ScenEdit_AssignUnitToMission(unitname, mission[, escort]) end
@@ -814,9 +899,9 @@ Information on a loadout to add/alter
 
 @param[type=string] UnitName The name/GUID of the unit to change the loadout on
 @param[type=number] LoadoutID The ID of the new loadout; 0 = use the current loadout
-@param[type=number] TimeToReady_Minutes How many minutes until the loadout is ready
-@param[type=bool] IgnoreMagazines If the new loadout should rely on the magazines having the right weapons ready
-@param[type=bool,opt] ExcludeOptionalWeapons Exclude optional weapons from loadout
+@param[type=number,opt] TimeToReady_Minutes How many minutes until the loadout is ready (default = database loadout time)
+@param[type=bool,opt] IgnoreMagazines If the new loadout should rely on the magazines having the right weapons ready (default = false)
+@param[type=bool,opt] ExcludeOptionalWeapons Exclude optional weapons from loadout  (default = false)
 ]]
 LoadoutInfo = {
 	UnitName, 
@@ -899,7 +984,7 @@ function ScenEdit_SetSidePosture(sideAName, sideBName, posture) end
 
 @function ScenEdit_SetSideOptions(options)
 @param[type=SideOptions] options The side items to be changed.
-@return[type=Side] The Side object
+@return[type={ SideOption }] The side options
 @usage ScenEdit_SetSideOptions('{side='SideA',awareness='OMNI',PROFICIENCY='ace')
 ]]
 
@@ -955,7 +1040,7 @@ function ScenEdit_SetSidePosture(sideAName, sideBName, posture) end
 
  @param[type=string] type The type of the thing to set the EMCON on.
  @param[type=string] name The name or GUID of the object to select.
- @param[type=string] emcon The new EMCON for the object.
+ @param[type=string] emcon The new EMCON for the object.
  @usage ScenEdit_SetEMCON('Side', 'NATO', 'Radar=Active;Sonar=Passive')
  @usage ScenEdit_SetEMCON('Mission', 'ASW Patrol #1', 'Inherit;Sonar=Active')
  @usage ScenEdit_SetEMCON('Unit', 'Camel 2', 'OECM=Active')
@@ -968,6 +1053,14 @@ Show a message box with a passed string.
 @param[type=string] string The string to display to the user
 @param[type=num] style The style of the message box
 @return button number pressed.
+
+ Style numbers
+ 1 = OK and Cancel buttons.
+ 2 = Abort, Retry, and Ignore buttons.
+ 3 = Yes, No, and Cancel buttons
+ 4 = Yes and No buttons.
+ 5 = Retry and Cancel buttons.
+
 ]]
 function ScenEdit_MsgBox(string, style) end
 
@@ -1011,13 +1104,22 @@ SideSelector = {
 	Name
 }
 
+--[[-- Side options.
+
+@Selector SideOption
+@field[type=string}] side Side name
+@field[type=string}] guid Side guid
+@field[type=string}] awareness Side awareness
+@field[type=string}] proficiency Side proficiency
+]]
+
 
 --[[-- Get side options.
  ... for components on unit.
 
 @function ScenEdit_GetSideOptions(options)
 @param[type=SideSelector] options 
-@return[type=SideOption] The side options
+@return[type={ SideOption }] The side options
 @usage ScenEdit_GetSideOptions({side='SideA'})
 ]]
 
@@ -1079,25 +1181,26 @@ Adds a unit based on a descriptor.
 ]]
 function ScenEdit_AddUnit(unit)end
 
---[[-- Update unit sensor/mount selector.
+--[[-- Update unit sensor/mount/weapon selector.
 
  ... lists minimum fields required. Other fields from @{Unit} may be included.
 
 @Selector UpdateUnit
 @field[type=string] guid The unit identifier
-@field[type=string] mode The function to perform (add_sensor,delete_sensor,add_mount,remove_mount)
-@field[type=number] dbid The database id of the item to add [required for add_ mode]
-@field[type=string] sensorid The identifier (guid) of the particular sensor to remove [required for remove_sensor mode]
-@field[type=string] mountid The identifier (guid) of the particular mount to remove [required for remove_mount mode]
-@field[type={ Arcs },opt] arc_detect The effective arcs for the particular sensor to detect in [override defaults]
-@field[type={ Arcs },opt] arc_track The effective arcs for the particular sensor to track/illuminate in [override defaults]
-@field[type={ Arcs },opt] arc_mount The effective arcs for the particular mount  [override defaults]
+@field[type=string] mode The function to perform (add_ sensor,remove_ sensor,add_ mount,remove_ mount,add_ weapon,remove_ weapon)
+@field[type=number] dbid The database id of the item to add [required for 'add_' mode]. If used with 'remove_' mode, and no sensorid/mountid, the first matching DBID will be removed.
+@field[type=string] sensorid The identifier (guid) of the particular sensor to remove [required for remove_ sensor mode]
+@field[type=string] mountid The identifier (guid) of the particular mount to remove [required for remove_ mount mode]
+@field[type=string] weaponid The identifier (guid) of the particular weapon to remove [required for remove_ weapon mode]. Must have a preceeding mountid to update
+@field[type={ Arcs },opt ] arc_detect The effective arcs for the particular sensor to detect in [override defaults]
+@field[type={ Arcs },opt ] arc_track The effective arcs for the particular sensor to track/illuminate in [override defaults]
+@field[type={ Arcs },opt ] arc_mount The effective arcs for the particular mount  [override defaults]
 ]]
 
 --[[--
 Update items on a unit.
 
-@param[type=UpdateUnit] options The unit sensor/? details to update
+@param[type=UpdateUnit] options The unit sensor/mount/weapon details to update
 @return[type=Unit] The updated unit
 @usage ScenEdit_UpdateUnit({guid='2cd64757-1b66-4609-ad56-df41bee652e5',mode='add_sensor',dbid=3352})
 @usage ScenEdit_UpdateUnit({guid='2cd64757-1b66-4609-ad56-df41bee652e5',mode='remove_sensor',dbid=3352,sensorId='871aea14-d963-4052-a7fc-ed36e97bb732'})
@@ -1189,7 +1292,7 @@ SideDescription = {
 --[[--
 Changes the side of a unit
 
-@param[type=SideDescription] sidedesc The description of how to change the unit's side
+@param[type=SideDescription] sidedesc The sides to change for the unit. Group will change attached units
 ]]
 function ScenEdit_SetUnitSide(sidedesc) end
 
@@ -1239,7 +1342,7 @@ function ScenEdit_SetUnitSide(sidedesc) end
 --[[-- Adds weapons into a magazine.
 
 @param[type=Weapon2Magazine] descriptor Describes the weapon and magazine to update
-@return[type=number] Number of items added to the magazine
+@return[type=number] Number of items added to the magazine
 @usage ScenEdit_AddWeaponToUnitMagazine({unitname='Ammo', w_dbid=773, number=1, w_max=10})
 ]]
 function ScenEdit_AddWeaponToUnitMagazine(descriptor)
@@ -1321,6 +1424,38 @@ function  ScenEdit_AddSide(table) end
 function  ScenEdit_RemoveSide(table) end
 
 
+--[[-- Add no-nav or exclusion zone. 
+ ... 
+
+@param[type=string ] sideName Side name/GUID 
+@param[type=string ] zoneType Type of zone to add: 0 = no-nav, 1 = exclusion 
+@param[type={ table } ] table  Description, Isactive, Area { of RPs }, Affects { of UnitTypes }, MarkAs (exc only), Locked (non only)
+@return[type={ Zone } ] 
+]]
+function  ScenEdit_AddZone(sideName, zoneType , table) end
+
+
+--[[-- Transfer cargo 
+ .. list from 'mother' to 'child' 
+
+@param[type=UnitSelector] fromUnit The unit with cargo
+@param[type=UnitSelector] toUnit The unit to get cargo
+@param[type={ Cargo }] cargoList List of cargo to transfer: table of {guids}, or { {DBID, number}}
+@return[type=boolen] Successful or not
+]]
+function ScenEdit_TransferCargo(fromUnit, toUnit, cargoList) end
+
+
+--[[-- Unload cargo 
+  
+
+@param[type=UnitSelector] fromUnit The unit with cargo
+@param[type={ Cargo }] cargoList List of cargo to unload: table of {guids}, or { {DBID, number}}
+@return[type=boolen] Successful or not
+]]
+function ScenEdit_UnloadCargo(fromUnit, cargoList) end
+
+
 --[[-- Get unit details 
 
 This will get the information about an active unit or a contact unit
@@ -1328,7 +1463,7 @@ This will get the information about an active unit or a contact unit
 @return[type=Unit] The information associated with the unit
 ]]
 function VP_GetUnit(ActiveOrContact) end
-
+
 
 --[[-- Contact selector.
 
@@ -1363,7 +1498,11 @@ function VP_GetContact(ContactGUID) end
 Gets a side object from the perspective of the player.
 
 @param[type=SideSelector] side The side to get information about.
-@return[type=SideInfo] Information about the side selected, from the perspective of the player.
+@return[type=Side] Information about the side selected, from the perspective of the player.
+@usage local a = VP_GetSide({Side ='sidea'}) -- a side object
+ local z = a.nonavzones --List of no-nav zones for the side if you need to find it
+ local n = a : getnonavzone(z[1].guid) -- required zone object for a particular zone
+ n.isactive = false -- turn it off
 ]]
 function VP_GetSide(side) end
 
@@ -1415,6 +1554,18 @@ Otherwise, a nil is returned.
 function ScenEdit_UnitY() end
 
 
+--[[-- Active Event 
+ .. that has been triggered.
+Otherwise, a nil is returned.
+
+ Note that EventX() can also be used as a shortcut for ScenEdit_EventX()
+
+@return[type=Event] The triggering event
+@usage local event = ScenEdit_EventX()
+]]
+function ScenEdit_EventX() end
+
+
 --[[-- Get the current scenario time.
 @return[type=TimeStamp] The UTC Unix timestamp of the current time in-game.
 @usage local now = ScenEdit_CurrentTime()
@@ -1463,7 +1614,7 @@ function ScenEdit_SetKeyValue(key, value) end
 
 --[[-- Gets the value for a key from the persistent key store.
 
-This function retrieves a value put into the store by @{ScenEdit_SetKeyValue}. The keys must be identical.
+This function retrieves a value put into the store by @{ScenEdit_SetKeyValue}. The keys must be identical.
 
 @param[type=string] key The key to fetch the associated value of
 @return[type=string] The value associated with the key. "" if none exists.
@@ -1528,11 +1679,11 @@ function ScenEdit_EndScenario() end
  This is what is being referred to here, rather than the ONE magazine group for the unit/group.
 
 @table Magazine
- @field[type=string] mag_capacity  Capacity|Storage
+ @field[type=string] mag_capacity  Capacity|Storage
  @field[type=string] mag_dbid Database ID
  @field[type=string] mag_guid GUID
  @field[type=string] mag_name Name
- @field[type={ WeaponLoaded }] mag_weapons Table of weapon loads in magazine
+ @field[type={ WeaponLoaded } ] mag_weapons Table of weapon loads in magazine
 ]]
 
 --[[-- Mount.
@@ -1543,7 +1694,10 @@ function ScenEdit_EndScenario() end
  @field[type=string] mount_dbid Database ID
  @field[type=string] mount_guid GUID
  @field[type=string] mount_name Name
- @field[type={ WeaponLoaded }] mount_weapons Table of weapon loads on mount
+ @field[type=string] mount_status Status 
+ @field[type=string] mount_statusR Reason why inoperative  [if not operational]
+ @field[type=string] mount_damage Damage Severity   [if not operational]
+ @field[type={ WeaponLoaded } ] mount_weapons Table of weapon loads on mount
 ]]
 
 --[[-- Weapon loads on mount or in magazine.
@@ -1561,12 +1715,13 @@ function ScenEdit_EndScenario() end
 
  This identifies the component/item(s) that are present in a unit. See @{Unit}:filterOnComponent on how to filter this table
 @table Component
-@field[type=string] comp_guid GUID
-@field[type=string] comp_dbid Database ID
-@field[type=string] comp_name Name
-@field[type=string] comp_type Type of component (list ?? sensor, rudder, etc)
-@field[type=string] comp_status Status
-@field[type=string] comp_damage Damage Severity
+ @field[type=string] comp_guid GUID
+ @field[type=string] comp_dbid Database ID
+ @field[type=string] comp_name Name
+ @field[type=string] comp_type Type of component (mount, sensor, rudder, etc)
+ @field[type=string] comp_status Status 
+ @field[type=string] comp_statusR Reason why inoperative  [if not operational]
+ @field[type=string] comp_damage Damage Severity   [if not operational]
 
 ]]
 
@@ -1578,7 +1733,7 @@ function ScenEdit_EndScenario() end
 @field[type=string] side  The unit's side. [READONLY]
 @field[type=string] guid  The unit's unique ID.  [READONLY]
 @field[type=string] subtype  The unit's subtype (if applicable). [READONLY]
-@field[type=Unit] base  The unit's assigned base. [READONLY]
+@field[type=Unit] base  The unit's assigned base.
 @field[type=Latitude] latitude The latitude of the unit.
 @field[type=Longitude] longitude The longitude of the unit .
 @field[type=number] DBID  The database ID of the unit  [READONLY]
@@ -1587,30 +1742,41 @@ function ScenEdit_EndScenario() end
 @field[type=Throttle] throttle The unit's current throttle setting.
 @field[type=bool] autodetectable True if the unit is automatically detected.
 @field[type=bool] holdposition True if the unit should hold.
-@field[type={ table}] holdfire Doctrine WCS setting for {air,surface,subsurface,land}. [READONLY]
+@field[type={ table} ] holdfire Doctrine WCS setting for {air,surface,subsurface,land}. [READONLY]
 @field[type=number] heading The unit's heading .
 @field[type=string] proficiency The unit proficiency, "Novice"|0, "Cadet"|1,"Regular"|2, "Veteran"|3, "Ace"|4.
 @field[type=string] newname If changing existing unit, the unit's new name .
-@field[type={ LatLon }] course The unit's course, as a table of lat/lon pairs
-@field[type={ Fuel }] fuel A table of fuel types used by unit.
+@field[type={ LatLon } ] course The unit's course, as a table of lat/lon pairs
+@field[type={ Fuel } ] fuel A table of fuel types used by unit.
 @field[type=Mission] mission The unit's assigned mission. Can be changed by setting to the Mission name or guid (calls ScenEdit_AssignUnitToMission)
 @field[type=Group] group The unit's group (if applicable). Can be changed assigning an existing or new name. It will try to create a group if new (experimental)
 @field[type=number]  airbornetime  how long aircraft has been flying. [READONLY]
 @field[type=number]  loadoutdbid  current aircraft loadout DBID. [READONLY]
+@field[type=number]  readytime  how long aircraft/ship takes to be ready. [READONLY]
 @field[type=string] unitstate Message on unit status. [READONLY]
 @field[type=string] fuelstate  Message on unit fuel status. [READONLY]
 @field[type=string]  weaponstate  Message on unit weapon status. [READONLY]
+@field[type=string]  condition  Message on unit ops status. [READONLY]
 @field[type=number]  manualSpeed  Manual desired speed. [READONLY]
 @field[type=bool]  manualAlitude  Manual altiude. [READONLY]
-@field[type={ table  }]  damage  Table {dp,flood,fires,startDp} of start and current DP, flood and fire level. [READONLY]
-@field[type={ Magazine }]  magazines  A table of magazines (with weapon loads) in the unit or group. Can be updated by @{ScenEdit_AddWeaponToUnitMagazine} [READONLY]
-@field[type={ Mount }]  mounts  A table of mounts (with weapon loads) in the unit or group. Can be updated by @{ScenEdit_AddReloadsToUnit} [READONLY]
-@field[type={ Component }]  components  A table of components on the unit.  [READONLY]
-@field[type={ table }]  ascontact  A table {side,guid,name} of this unit seen from the other sides (as contacts).  [READONLY]
+@field[type={ table } ]  damage  Table {dp,flood,fires,startDp} of start and current DP, flood and fire level. [READONLY]
+@field[type={ Magazine } ]  magazines  A table of magazines (with weapon loads) in the unit or group. Can be updated by @{ScenEdit_AddWeaponToUnitMagazine} [READONLY]
+@field[type={ Mount } ]  mounts  A table of mounts (with weapon loads) in the unit or group. Can be updated by @{ScenEdit_AddReloadsToUnit} [READONLY]
+@field[type={ Component } ]  components  A table of components on the unit.  [READONLY]
+@field[type={ table } ]  ascontact  A table {side,guid,name} of this unit seen from the other sides (as contacts).  [READONLY]
 @field[type={ Weather } ] weather Table of weather parameters (temp, rainfall, underrain, seastate)
+@field[type={ table } ] areaTriggersFired Table of active 'in area' triggers that have fired for unit
+@field[type={ table } ]  OODA  Table contain unit's "observe, orient, decide, act" values {evasion, targeting, detection} 
+@field[type={ table } ] hostedUnits Table of boats and aircraft docked/embarked on the unit
+@field[type={ table } ] weapon Table of shooter unit, at contact unit and detonated (when destroyed) if a weapon [READONLY]
+@field[type={ table } ] targetedBy Table of unit guids that have this unit as a target
+@field[type={ table } ] firingAt Table of contact guids that this unit is firing at
+@field[type={ table } ] firedOn Table of guids that are firing on this unit
+@field[type=method] inArea({area}) Is unit in the 'area' defined by table of RPs (true/false)
 @field[type=method] delete() Immediately removes unit object
 @field[type=method] filterOnComponent(`type`) Filters unit on `type` of component and returns a @{Component} table.
 @field[type=method] rangetotarget('contactid') Calculate flat distance to a contact location
+
  ScenEdit only
 @field[type=bool] refuel Trigger the unit to attempt an UNREP
 @field[type=bool] RTB Trigger the unit to return to base
@@ -1676,21 +1842,32 @@ td { padding: .5em; }
 @field[type=string] actualunitid The contact actual GUID. [READONLY]
 @field[type=Latitude] latitude The latitude of the contact. [READONLY]
 @field[type=Longitude] longitude The longitude of the contact. [READONLY]
+@field[type=number] speed Speed if known  [READONLY]
+@field[type=number] heading Heading if known  [READONLY]
+@field[type=number] altitude Altitude if known  [READONLY]
 @field[type=number] missile_defence Applicable to Facility and Ships. -1 = unknown contact [READONLY]
 @field[type=number] age How long has contact been detected (in seconds)  [READONLY]
 @field[type=string] type Type of contact. [READONLY]
 @field[type=number] typed Type of contact. [READONLY]
-@field[type={ LatLon }] areaofuncertainty Table of points defining the area of contact. [READONLY]
+@field[type={ LatLon } ] areaofuncertainty Table of points defining the area of contact. [READONLY]
 @field[type=string] type_description Contact type description. [READONLY]
 @field[type=number] actualunitdbid Actual contact type. [READONLY]
 @field[type=string] classificationlevel Contact classification. [READONLY]
-@field[type={ EMmatch }]  potentialmatches Table {EMmatch} on potential EMCON emission matches. [READONLY] 
+@field[type={ EMmatch } ]  potentialmatches Table {EMmatch} on potential EMCON emission matches. [READONLY] 
 @field[type=Side] side Contact's actual side. [READONLY]
 @field[type=Side] fromside The side who sees this contact. [READONLY]
+@field[type=Side] detectedBySide The side who originally saw this contact. Would be same as fromside unless shared [READONLY]            
 @field[type=string] posture Posture towards contact.
 @field[type=bool] FilterOut True to filtered out contact
 @field[type={ Weather } ] weather Table of weather parameters (temp, rainfall, underrain, seastate)
+@field[type={ table } ] BDA Table of battle damage assessment (fires, flood, structural)
+@field[type={ table } ] emissions Table {name, age, solid} of detected emmissions from contact 
+@field[type={ table } ] detectionBy Table of how long ago was detected by type (radar, esm, visual, infrared, sonaractive, sonarpassive) 
+@field[type={ table } ] targetedBy Table of unit guids that have this contact as a target
+@field[type={ table } ] firingAt Table of contact guids that this contact is firing at
+@field[type={ table } ] firedOn Table of guids that are firing on this contact
 @field[type=method] DropContact() Drops contact from the reporting side
+@field[type=method] inArea({area}) Is contact in the 'area' defined by table of RPs (true/false)
 ]]
 
 
@@ -1704,6 +1881,28 @@ td { padding: .5em; }
 @field[type=string] type Not applicable to Facility
 @field[type=number] subtype Type of item within the contact type ( subtype is "Fighter" within scope of Aircraft)
 @field[type=number] missile_defence Applicable to Facility and Ships
+]]
+
+
+--[[-- Event details
+. 
+
+@Wrapper Event
+@field[type=string] name The event name.
+@field[type=string] guid The event GUID. [READONLY]
+@field[type=string] description The event GUID.
+@field[type={ table} ] details The details of the event with tables for triggers/conditions/actions. [READONLY]
+@field[type=bool] isActive The event is active
+@field[type=bool] isRepeatable The event repeats
+@field[type=bool] isShown The event shows in log
+@field[type=string] probability The event chance to occur (0-100)
+@field[type={ table} ] actions The details of the actions in event [READONLY]
+@field[type={ table} ] conditions The details of the conditions in event [READONLY]
+@field[type={ table} ] triggers The details of the triggers in event [READONLY]
+
+ @usage -- first trigger; as a 'Unit Detected'; what was the target filter values
+ local Event = ScenEdit_EventX() -- current active event
+ print(event.details.triggers[1].UnitDetected.TargetFilter)
 ]]
 
 
@@ -1735,7 +1934,7 @@ td { padding: .5em; }
 @field[type={ GUID }] targetlist A table of targets assigned to mission. [READONLY]
 @field[type=AAR] aar A table of the mission air-to-air refueling options. [READONLY]
 @field[type=FerryMission] ferrymission A table of the mission specific options. [READONLY]
-@field[type=MineClearMission] mineclearmission A table of the mission specific options. [READONLY]
+@field[type=MineClearMission] mineclearmission A table of the mission specific options. [READONLY]
 @field[type=MineMission] minemission A table of the mission specific options. [READONLY]
 @field[type=SupportMission] supportmission A table of the mission specific options. [READONLY]
 @field[type=PatrolMission] patrolmission A table of the mission specific options. [READONLY]
@@ -1904,7 +2103,7 @@ td { padding: .5em; }
 @field[type=Size] escortFlightSizeNonshooter
 @field[type=number] escortMinNonshooter
 @field[type=number] escortMaxNonshooter
-@field[type=Size] escortGroupSize
+@field[type=Size] escortGroupSize
 @field[type=bool] escortUseGroupSize  True if minimum size required
 @field[type=bool] strikeOneTimeOnly True if activated
 @field[type=string] strikeMinimumTrigger
@@ -1976,6 +2175,8 @@ td { padding: .5em; }
 @param[type=Proficiency] proficiency [READONLY]
 @param[type=method] getexclusionzone(`ZoneGUID|ZoneName|ZoneDescription`) Returns matching @{Zone} or nil
 @param[type=method] getnonavzone(`ZoneGUID|ZoneName|ZoneDescription`) Returns matching @{Zone} or nil
+@param[type=method ] unitsBy(UnitType) Returns table of units filtered by type of unit for the designated side or nil.
+@param[type=method ] contactsBy(UnitType) Returns table of current contacts filtered by type of unit for the designated side or nil.
 
 ]]
 
@@ -1999,10 +2200,12 @@ td { padding: .5em; }
 
 @Wrapper Zone
 @field[type=string] guid The GUID of the zone. [READONLY]
-@field[type=bool] isactive Zone is currently active.
-@field[type=string] name The name of the zone.
 @field[type=string] description The description of the zone.
+@field[type=bool] isactive Zone is currently active.
 @field[type={ ZoneMarker }] area A set of reference points marking the zone. [READONLY]
+@field[type={ unitTypes } ] affects List of unit types (ship, submarine, aircraft, facility)
+@field[type=bool] locked Zone is locked.
+@field[type=Posture] markas Posture of violator of exclusion zone.
 ]]
 
 --[[-- Zone marker.

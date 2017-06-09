@@ -62,7 +62,7 @@ The trigger related keywords are listed below.<br>
 <tr><td></td><td>SpecificUnitClass</td><td>Unit class (DBID)</td></tr>
 <tr><td></td><td>SpecificUnit</td><td>Actual unit</td></tr>
 </table>
-Note that side is mandatory, but you can specify a unit or type/sub/class. However, if using type/sub/class, you can use<br> 1) type, or<br> 2) type and subtype, or <br>3) type, subtype and class. </p>
+Note that side is mandatory, but you can specify a unit or type/sub/class. However, if using type/sub/class, you can use<br> 1) type, or<br> 2) type and subtype, or <br>3) type, subtype (optional as it is inferred from class) and class. </p>
 
 <p>
 <b>Examples</b>
