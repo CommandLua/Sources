@@ -40,6 +40,7 @@ The trigger related keywords are listed below.<br>
 <tr><td>UnitDetected</td><td>TargetFilter</td><td>See below</td></tr>
 <tr><td></td><td>DetectorSideID</td><td>Side doing the detecting</td></tr>
 <tr><td></td><td>MCL</td><td>Minimum classifcation level</td></tr>
+<tr><td></td><td>Area</td><td>Table of reference points</td></tr>
 <tr><td>UnitEntersArea</td><td>TargetFilter</td><td>See below</td></tr>
 <tr><td></td><td>Area</td><td>Table of reference points</td></tr>
 <tr><td></td><td>ETOA</td><td>Earliest date/time of arrival</td></tr>
@@ -49,6 +50,8 @@ The trigger related keywords are listed below.<br>
 <tr><td>UnitRemainsInArea</td><td>TargetFilter</td><td>See below</td></tr>
 <tr><td></td><td>Area</td><td>Table of reference points</td></tr>
 <tr><td></td><td>TD</td><td>Time to remain in area in seconds (or as days:hours:minutes:seconds)</td></tr>
+<tr><td>UnitBaseStatus</td><td>TargetFilter</td><td>See below </td></tr>
+<tr><td></td><td>TargetStatus</td><td>Status number to monitor </td></tr>
 </table>
 </p>
 <p><table>TargetFilter:<br> A series of filters to apply to units. Only units matching this filter will fire the trigger.

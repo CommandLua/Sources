@@ -37,7 +37,7 @@
 --Note also, that the Lua history log should also record the event script errors.
 --
 --
---<b>Release: 1.12 [plus] </b>
+--<b>Release: 1.13 </b>
 --
 
 --[[-- Selects a doctrine.
@@ -527,16 +527,25 @@ To select reference point(s), specify either
 @field[type=string] side The side the reference point is visible to
 @field[type=string] name The name of the reference point
 @field[type=string] guid The unique identifier for the reference point
-@field[type={name|guid}] area Table of reference points (used with the Set()/Get() functions]
+@field[type={name|guid}] area Table of reference points by name and/or guid (used with the Set()/Get() functions)
 ]]
 
---[[-- Add a new reference point.
+--[[-- Add new reference point(s).
 
-This function adds a new reference point as defined by a descriptor. 
-The descriptor <b>must</b> contain at least a name, side, latitude and longitude. 
-@param[type=ReferencePoint] descriptor The reference point details to create
-@usage ScenEdit_AddReferencePoint({side="United States", name="Downed Pilot", lat=0.1, lon=4, highlighted=true})
-@return[type=ReferencePoint] The reference point wrapper for the new reference point.
+This function adds new reference point(s) as defined by a descriptor. 
+As this function also calls ScenEdit_SetReferencePoint() at the end, those parameters can also be passed in this function.<br>
+It can take a new referrnce point, or a table of new reference points.
+The descriptor <b>must</b> contain at least a side, and one set of latitude and longitude, or an area defined by one or more latitude and longitude values.
+Points can also be relative to a unit based on bearing and distence. This applies to ALL bearing type rp(s) in the function.
+ Field = RelativeTo The unit name/GUID that the RP(s) are relative to
+
+@param[type=ReferencePointSelector|{ReferencePoint}] descriptor The reference point details to be created.
+Field 'area' can be <br>(a) Table of reference points {name, longitude, latitude} if 'RelativeTo' not used, or <br>
+(b) table of reference points {name, bearing, distance} if 'RelativeTo' used.<br> 
+Leaving out name will default it to noraml 'RP-..'
+@usage ScenEdit_AddReferencePoint( {side="United States", name="Downed Pilot", lat=0.1, lon=4, highlighted=true})
+@usage ScenEdit_AddReferencePoint( {side='sidea', RelativeTo='USN Dewey', bearing=45 ,distance=20, clear=true })
+@return[type=ReferencePoint] The reference point wrapper for the new reference point, or the first one in an area.
 ]]
 function ScenEdit_AddReferencePoint(descriptor) end
 
@@ -861,10 +870,11 @@ If both are given, then the GUID is used preferentially.
 
 
 --[[--
-Requests that a unit be hosted to another
+Requests that a unit be hosted/based to another
 
 @param[type=string] HostedUnitNameOrID The name or GUID of the unit to put into the host
 @param[type=string] SelectedHostNameOrID The name or GUID of the host to put the unit into
+ use SetUnit() with 'base=xxx' to assign the unit to a 'base'
 ]]
 HostUnit = {
 	HostedUnitNameOrID,
@@ -872,8 +882,9 @@ HostUnit = {
 }
 
 
---[[--
-Hosts a unit to the specified host. The unit will be moved from any location, including flying or hosted elsewhere.
+--[[-- Host/base
+ .. to the specified host. 
+ SelectedHostNameOrID' option: the unit will be moved from any location, including flying, to the new location. 
 
 @param[type=HostUnit] host_info The information about the hosting request
 ]]
@@ -888,7 +899,7 @@ The 'UnitX' can be used as the unit descriptor
 @param[type=string] unitname The name/GUID of the unit to assign
 @param[type=string] mission The mission name/GUID to use
 @param[type=bool] escort [Default=False] If the mission is a strike one, then assign unit to the 'Escort' for the strike
-@return[type=boolean] True/False for Successful/Failure
+@return[type=boolean] True/False for Successful/Failure
 @usage ScenEdit_AssignUnitToMission("Bar #1", "Strike")
 ]]
 function ScenEdit_AssignUnitToMission(unitname, mission[, escort]) end
@@ -944,7 +955,7 @@ function ScenEdit_SetWeather(temperature, rainfall, undercloud, seastate) end
 @field[type=number] seastate  Sea state
 
 ]]
-
+
 --[[-- Get the current weather conditions.
 
 
@@ -1040,7 +1051,7 @@ function ScenEdit_SetSidePosture(sideAName, sideBName, posture) end
 
  @param[type=string] type The type of the thing to set the EMCON on.
  @param[type=string] name The name or GUID of the object to select.
- @param[type=string] emcon The new EMCON for the object.
+ @param[type=string] emcon The new EMCON for the object.
  @usage ScenEdit_SetEMCON('Side', 'NATO', 'Radar=Active;Sonar=Passive')
  @usage ScenEdit_SetEMCON('Mission', 'ASW Patrol #1', 'Inherit;Sonar=Active')
  @usage ScenEdit_SetEMCON('Unit', 'Camel 2', 'OECM=Active')
@@ -1342,7 +1353,7 @@ function ScenEdit_SetUnitSide(sidedesc) end
 --[[-- Adds weapons into a magazine.
 
 @param[type=Weapon2Magazine] descriptor Describes the weapon and magazine to update
-@return[type=number] Number of items added to the magazine
+@return[type=number] Number of items added to the magazine
 @usage ScenEdit_AddWeaponToUnitMagazine({unitname='Ammo', w_dbid=773, number=1, w_max=10})
 ]]
 function ScenEdit_AddWeaponToUnitMagazine(descriptor)
@@ -1367,7 +1378,7 @@ function ScenEdit_AddWeaponToUnitMagazine(descriptor)
 @function ScenEdit_RefuelUnit
 @param[type=RefuelOptions] unitOptions The unit and refueling options.
 @return[type=String] If successful, then empty string. Else message showing why it failed to
-@usage ScenEdit_RefuelUnit({side="United States", unitname="USS Test"})
+@usage ScenEdit_RefuelUnit({side="United States", unitname="USS Test"})
 @usage ScenEdit_RefuelUnit({side="United States", unitname="USS Test", tanker="Hose #1"})
 @usage ScenEdit_RefuelUnit({side="United States", unitname="USS Test", missions={"Pitstop"}})
 ]]
@@ -1398,7 +1409,7 @@ function ScenEdit_AddWeaponToUnitMagazine(descriptor)
  ... as an auto-target or manual target with weapon allocation
 
 @param[type=string] attackerID The unit attacking as GUID or Name
-@param[type=string] contactId The contact being attacked as GUID or Name (GUID is better as the name can change as its classification changes)
+@param[type=string] contactId The contact being attacked as GUID or Name (GUID is better as the name can change as its classification changes)
 @param[type={ AttackOptions }] options Contains type of attack and weapon allocation if required)
 @return[type=bool] True if attack successful assigned
 @usage ScenEdit_AttackContact(attackerID, contactId ,{mode='1', mount=438, weapon=1413, qty=10}) -- alloc 10 gunfire
@@ -1456,6 +1467,17 @@ function ScenEdit_TransferCargo(fromUnit, toUnit, cargoList) end
 function ScenEdit_UnloadCargo(fromUnit, cargoList) end
 
 
+--[[ Gets formation
+ .. from a group.
+
+
+@param[type=UnitSelector] unit The unit to select and must be a group.
+@return[type=table] Table of unit with stations.
+@usage ScenEdit_GetFormation({side="United States", unitname="TF 611"})
+]]
+function ScenEdit_GetFormation(unit)end
+
+
 --[[-- Get unit details 
 
 This will get the information about an active unit or a contact unit
@@ -1463,7 +1485,7 @@ This will get the information about an active unit or a contact unit
 @return[type=Unit] The information associated with the unit
 ]]
 function VP_GetUnit(ActiveOrContact) end
-
+
 
 --[[-- Contact selector.
 
@@ -1525,6 +1547,15 @@ function World_GetElevation(location) end
 function World_GetCircleFromPoint(table) end
 
 
+--[[--
+	Returns a location based on bearing.
+
+@param[type=Point] table 
+@return Table of the new point
+]]
+function World_GetPointFromBearing(table) end
+
+
 --[[-- Activating Unit 
  .. that triggered the current Event.
 Otherwise, a nil is returned.
@@ -1552,6 +1583,16 @@ Otherwise, a nil is returned.
   print('Sensor: ');print( by.sensor[1].name .. ' of type ' ..  by.sensor[1].type);
 ]]
 function ScenEdit_UnitY() end
+
+
+--[[-- Detected Contact 
+ ... from a Unit Detected event trigger.
+Otherwise, a nil is returned.
+
+ Note that UnitC() can also be used as a shortcut for ScenEdit_UnitC()
+@return[type=Contact] A contact descriptor or nil 
+]]
+function ScenEdit_UnitC() end
 
 
 --[[-- Active Event 
@@ -1614,7 +1655,7 @@ function ScenEdit_SetKeyValue(key, value) end
 
 --[[-- Gets the value for a key from the persistent key store.
 
-This function retrieves a value put into the store by @{ScenEdit_SetKeyValue}. The keys must be identical.
+This function retrieves a value put into the store by @{ScenEdit_SetKeyValue}. The keys must be identical.
 
 @param[type=string] key The key to fetch the associated value of
 @return[type=string] The value associated with the key. "" if none exists.
@@ -1673,13 +1714,25 @@ function ScenEdit_EndScenario() end
 ]]
 
 
+--[[-- Get bearing between points.
+
+ The points can be a GUID of a unit/contact or a latitude/longitude point.
+@usage Tool_Bearing('8269b881-20ce-4f2e-baa0-6823e46d55a4','004aa55d-d553-428d-a727-26853737c8f4' )
+@usage Tool_Bearing( {latitude='33.1991547589118', longitude='138.376876749942'}, '8269b881-20ce-4f2e-baa0-6823e46d55a4' )
+@field[type=table|string] fromHere
+@field[type=table|string] toHere
+@return[type=number] The bearing
+@function Tool_Bearing(fromHere, toHere)
+]]
+
+
 --[[-- Magazine.
 
  Note that when dealing with a magazine in a unit, it may constist of one or more actual magazine 'blocks'. 
  This is what is being referred to here, rather than the ONE magazine group for the unit/group.
 
 @table Magazine
- @field[type=string] mag_capacity  Capacity|Storage
+ @field[type=string] mag_capacity  Capacity|Storage
  @field[type=string] mag_dbid Database ID
  @field[type=string] mag_guid GUID
  @field[type=string] mag_name Name
@@ -1746,7 +1799,7 @@ function ScenEdit_EndScenario() end
 @field[type=number] heading The unit's heading .
 @field[type=string] proficiency The unit proficiency, "Novice"|0, "Cadet"|1,"Regular"|2, "Veteran"|3, "Ace"|4.
 @field[type=string] newname If changing existing unit, the unit's new name .
-@field[type={ LatLon } ] course The unit's course, as a table of lat/lon pairs
+@field[type={ WayPoint } ] course The unit's course, as a table of waypoints
 @field[type={ Fuel } ] fuel A table of fuel types used by unit.
 @field[type=Mission] mission The unit's assigned mission. Can be changed by setting to the Mission name or guid (calls ScenEdit_AssignUnitToMission)
 @field[type=Group] group The unit's group (if applicable). Can be changed assigning an existing or new name. It will try to create a group if new (experimental)
@@ -1756,9 +1809,10 @@ function ScenEdit_EndScenario() end
 @field[type=string] unitstate Message on unit status. [READONLY]
 @field[type=string] fuelstate  Message on unit fuel status. [READONLY]
 @field[type=string]  weaponstate  Message on unit weapon status. [READONLY]
-@field[type=string]  condition  Message on unit ops status. [READONLY]
-@field[type=number]  manualSpeed  Manual desired speed. [READONLY]
-@field[type=bool]  manualAlitude  Manual altiude. [READONLY]
+@field[type=string]  condition_v  Docking/Air Ops condition value. [READONLY]
+@field[type=string]  condition  Message on unit dock/air ops status. [READONLY]
+@field[type=number]  manualSpeed  Manual desired speed. 'CURRENT/DESIRED/OFF or number'
+@field[type=bool]  manualAlitude  Manual altiude.  'True/False'
 @field[type={ table } ]  damage  Table {dp,flood,fires,startDp} of start and current DP, flood and fire level. [READONLY]
 @field[type={ Magazine } ]  magazines  A table of magazines (with weapon loads) in the unit or group. Can be updated by @{ScenEdit_AddWeaponToUnitMagazine} [READONLY]
 @field[type={ Mount } ]  mounts  A table of mounts (with weapon loads) in the unit or group. Can be updated by @{ScenEdit_AddReloadsToUnit} [READONLY]
@@ -1772,6 +1826,7 @@ function ScenEdit_EndScenario() end
 @field[type={ table } ] targetedBy Table of unit guids that have this unit as a target
 @field[type={ table } ] firingAt Table of contact guids that this unit is firing at
 @field[type={ table } ] firedOn Table of guids that are firing on this unit
+@field[type={ table } ] formation Table of unit's formation info {bearing, type (of bearing), distance, sprint (and drift) }
 @field[type=method] inArea({area}) Is unit in the 'area' defined by table of RPs (true/false)
 @field[type=method] delete() Immediately removes unit object
 @field[type=method] filterOnComponent(`type`) Filters unit on `type` of component and returns a @{Component} table.
@@ -1786,6 +1841,22 @@ function ScenEdit_EndScenario() end
     
 ]]
 
+
+--[[-- Waypoint
+ .. describing the long/lat points as in a plotted course
+
+@table Waypoint
+@field[type=number] longitude 
+@field[type=number] latitude
+@field[type=string] description
+@field[type=string] presetAltitude
+@field[type=string] presetDepth
+@field[type=string] presetThrottle
+@field[type=number] desiredAltitude
+@field[type=number] desiredSpeed
+@field[type=number] desiredAltitudeTF terrain-following
+
+]]
 
 --[[-- Fuel.
 
@@ -1814,7 +1885,7 @@ td { padding: .5em; }
 </table>
 @table Fuel
 @field[type={ FuelState }] fueltype The state of the type(s) of fuel in the unit. 
-@usage local fuel = u.fuel
+@usage local fuel = u.fuel
        fuel[3001].current = 400
        u.fuel = fuel
 ]]
@@ -1913,6 +1984,7 @@ td { padding: .5em; }
 @field[type=string] guid [READONLY]
 @field[type=string] name 
 @field[type=string] side [READONLY]
+@field[type=string] lead Group leader guid
 @field[type={ string }] unitlist Table of unit GUIDs in the group. [READONLY]
 ]]
 
@@ -1934,7 +2006,7 @@ td { padding: .5em; }
 @field[type={ GUID }] targetlist A table of targets assigned to mission. [READONLY]
 @field[type=AAR] aar A table of the mission air-to-air refueling options. [READONLY]
 @field[type=FerryMission] ferrymission A table of the mission specific options. [READONLY]
-@field[type=MineClearMission] mineclearmission A table of the mission specific options. [READONLY]
+@field[type=MineClearMission] mineclearmission A table of the mission specific options. [READONLY]
 @field[type=MineMission] minemission A table of the mission specific options. [READONLY]
 @field[type=SupportMission] supportmission A table of the mission specific options. [READONLY]
 @field[type=PatrolMission] patrolmission A table of the mission specific options. [READONLY]
@@ -2103,7 +2175,7 @@ td { padding: .5em; }
 @field[type=Size] escortFlightSizeNonshooter
 @field[type=number] escortMinNonshooter
 @field[type=number] escortMaxNonshooter
-@field[type=Size] escortGroupSize
+@field[type=Size] escortGroupSize
 @field[type=bool] escortUseGroupSize  True if minimum size required
 @field[type=bool] strikeOneTimeOnly True if activated
 @field[type=string] strikeMinimumTrigger
@@ -2201,7 +2273,7 @@ td { padding: .5em; }
 @Wrapper Zone
 @field[type=string] guid The GUID of the zone. [READONLY]
 @field[type=string] description The description of the zone.
-@field[type=bool] isactive Zone is currently active.
+@field[type=bool] isactive Zone is currently active.
 @field[type={ ZoneMarker }] area A set of reference points marking the zone. [READONLY]
 @field[type={ unitTypes } ] affects List of unit types (ship, submarine, aircraft, facility)
 @field[type=bool] locked Zone is locked.
