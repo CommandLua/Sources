@@ -67,6 +67,19 @@ The trigger related keywords are listed below.<br>
 </table>
 Note that side is mandatory, but you can specify a unit or type/sub/class. However, if using type/sub/class, you can use<br> 1) type, or<br> 2) type and subtype, or <br>3) type, subtype (optional as it is inferred from class) and class. </p>
 
+<p><table>TargetType:<br>
+ <style>
+ tr { border: 1px solid black;}
+ td { padding: 2px; }
+ </style>
+<tr><td>Aircraft</td><td>1</td></tr>
+<tr><td>Ship</td><td>2</td></tr>
+<tr><td>Submarine</td><td>3</td></tr>
+<tr><td>Facility</td><td>4</td></tr>
+<tr><td>Aimpoint</td><td>5</td></tr>
+<tr><td>Weapon</td><td>6</td></tr>
+<tr><td>Satellite </td><td>7</td></tr>
+</table></p>
 <p>
 <b>Examples</b>
 </p>

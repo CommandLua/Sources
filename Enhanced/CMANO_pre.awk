@@ -38,7 +38,7 @@ print "--"
 print "--Note also, that the Lua history log should also record the event script errors."
 print "--"
 print "--"
-print "--<b>Release: 1.13 </b>"
+print "--<b>Release: 1.14 </b>"
 print "--"
 }
 {print $0}

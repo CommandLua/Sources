@@ -37,7 +37,7 @@
 --Note also, that the Lua history log should also record the event script errors.
 --
 --
---<b>Release: 1.13 </b>
+--<b>Release: 1.14 </b>
 --
 
 --[[-- Selects a doctrine.
@@ -1022,6 +1022,7 @@ function ScenEdit_SetSidePosture(sideAName, sideBName, posture) end
 @field[type=string] guid 
 @field[type=string] fires 
 @field[type=string] flood 
+@field[type=number] dp Damage points
 @field[type={ table }] components Table of component damage setting { guid, damageLevel }
 ]]
 
@@ -1168,7 +1169,7 @@ function ScenEdit_SpecialMessage(side, message) end
  ... lists minimum fields required. Other fields from @{Unit} may be included.
 
 @Selector NewUnit
-@field[type=string] type The type of unit (Ship, Sub, Aircraft, Facility)
+@field[type=string] type The type of unit (Ship, Sub, Aircraft, Facility, Satellite)
 @field[type=string] unitname The name of the unit 
 @field[type=string] side The side name or GUID to add unit to
 @field[type=number] dbid The database id of the unit
@@ -1177,6 +1178,8 @@ function ScenEdit_SpecialMessage(side, message) end
 @field[type=string] base Unit base name or GUID where the unit will be 'hosted' (applicable to AIR, SHIP, SUB)
 @field[type=number] loadout Aircraft database loadout id (applicable to AIR)
 @field[type=number] altitude Unit altitude (applicable to AIR)
+@field[type=string] guid Optional custom GUID to override auto one
+@field[type=number] orbit Orbit index (applicable to SATELLITE)
 ]]
 
 --[[--
@@ -1198,11 +1201,12 @@ function ScenEdit_AddUnit(unit)end
 
 @Selector UpdateUnit
 @field[type=string] guid The unit identifier
-@field[type=string] mode The function to perform (add_ sensor,remove_ sensor,add_ mount,remove_ mount,add_ weapon,remove_ weapon)
+@field[type=string] mode The function to perform (add_ sensor,remove_ sensor,add_ mount,remove_ mount,add_ weapon,remove_ weapon,add_comms,remove_comms)
 @field[type=number] dbid The database id of the item to add [required for 'add_' mode]. If used with 'remove_' mode, and no sensorid/mountid, the first matching DBID will be removed.
 @field[type=string] sensorid The identifier (guid) of the particular sensor to remove [required for remove_ sensor mode]
 @field[type=string] mountid The identifier (guid) of the particular mount to remove [required for remove_ mount mode]
 @field[type=string] weaponid The identifier (guid) of the particular weapon to remove [required for remove_ weapon mode]. Must have a preceeding mountid to update
+@field[type=string] commsid The identifier (guid) of the particular communication device to remove [required for remove_ mount mode]
 @field[type={ Arcs },opt ] arc_detect The effective arcs for the particular sensor to detect in [override defaults]
 @field[type={ Arcs },opt ] arc_track The effective arcs for the particular sensor to track/illuminate in [override defaults]
 @field[type={ Arcs },opt ] arc_mount The effective arcs for the particular mount  [override defaults]
@@ -1378,7 +1382,7 @@ function ScenEdit_AddWeaponToUnitMagazine(descriptor)
 @function ScenEdit_RefuelUnit
 @param[type=RefuelOptions] unitOptions The unit and refueling options.
 @return[type=String] If successful, then empty string. Else message showing why it failed to
-@usage ScenEdit_RefuelUnit({side="United States", unitname="USS Test"})
+@usage ScenEdit_RefuelUnit({side="United States", unitname="USS Test"})
 @usage ScenEdit_RefuelUnit({side="United States", unitname="USS Test", tanker="Hose #1"})
 @usage ScenEdit_RefuelUnit({side="United States", unitname="USS Test", missions={"Pitstop"}})
 ]]
@@ -1409,7 +1413,7 @@ function ScenEdit_AddWeaponToUnitMagazine(descriptor)
  ... as an auto-target or manual target with weapon allocation
 
 @param[type=string] attackerID The unit attacking as GUID or Name
-@param[type=string] contactId The contact being attacked as GUID or Name (GUID is better as the name can change as its classification changes)
+@param[type=string] contactId The contact being attacked as GUID or Name (GUID is better as the name can change as its classification changes)
 @param[type={ AttackOptions }] options Contains type of attack and weapon allocation if required)
 @return[type=bool] True if attack successful assigned
 @usage ScenEdit_AttackContact(attackerID, contactId ,{mode='1', mount=438, weapon=1413, qty=10}) -- alloc 10 gunfire
@@ -1527,6 +1531,18 @@ Gets a side object from the perspective of the player.
  n.isactive = false -- turn it off
 ]]
 function VP_GetSide(side) end
+
+
+--[[-- Export unit details 
+
+ ... to a file for later import
+ parameters filename, filter by unit type, side
+@param[type=table] table of Filters: TARGETSIDE, TARGETTYPE, TARGETSUBTYPE, SPECIFICUNITCLASS, SPECIFICUNIT. The values are like the Event Target triigers, but can take multiple ones. As in TargetType={'aircraft','submarine'}} 
+@param[type=string] filename of exported file
+@return[type=bool] Success or failure
+ {Filter}
+]]
+function VP_ExportUnits(table, filename) end
 
 
 --[[--
@@ -1812,7 +1828,7 @@ function ScenEdit_EndScenario() end
 @field[type=string]  condition_v  Docking/Air Ops condition value. [READONLY]
 @field[type=string]  condition  Message on unit dock/air ops status. [READONLY]
 @field[type=number]  manualSpeed  Manual desired speed. 'CURRENT/DESIRED/OFF or number'
-@field[type=bool]  manualAlitude  Manual altiude.  'True/False'
+@field[type=number]  manualAlitude  Manual desired altiude (meters).  'OFF or number'
 @field[type={ table } ]  damage  Table {dp,flood,fires,startDp} of start and current DP, flood and fire level. [READONLY]
 @field[type={ Magazine } ]  magazines  A table of magazines (with weapon loads) in the unit or group. Can be updated by @{ScenEdit_AddWeaponToUnitMagazine} [READONLY]
 @field[type={ Mount } ]  mounts  A table of mounts (with weapon loads) in the unit or group. Can be updated by @{ScenEdit_AddReloadsToUnit} [READONLY]
@@ -1827,6 +1843,7 @@ function ScenEdit_EndScenario() end
 @field[type={ table } ] firingAt Table of contact guids that this unit is firing at
 @field[type={ table } ] firedOn Table of guids that are firing on this unit
 @field[type={ table } ] formation Table of unit's formation info {bearing, type (of bearing), distance, sprint (and drift) }
+@field[type=bool ] sprintDrift Sprint and drift  'True/False'
 @field[type=method] inArea({area}) Is unit in the 'area' defined by table of RPs (true/false)
 @field[type=method] delete() Immediately removes unit object
 @field[type=method] filterOnComponent(`type`) Filters unit on `type` of component and returns a @{Component} table.
@@ -1885,7 +1902,7 @@ td { padding: .5em; }
 </table>
 @table Fuel
 @field[type={ FuelState }] fueltype The state of the type(s) of fuel in the unit. 
-@usage local fuel = u.fuel
+@usage local fuel = u.fuel
        fuel[3001].current = 400
        u.fuel = fuel
 ]]
