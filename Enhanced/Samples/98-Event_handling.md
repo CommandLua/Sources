@@ -41,6 +41,8 @@ The trigger related keywords are listed below.<br>
 <tr><td></td><td>DetectorSideID</td><td>Side doing the detecting</td></tr>
 <tr><td></td><td>MCL</td><td>Minimum classifcation level</td></tr>
 <tr><td></td><td>Area</td><td>Table of reference points</td></tr>
+<tr><td>UnitEmissions</td><td>TargetFilter</td><td>See below</td></tr>
+<tr><td></td><td>DetectorSideID</td><td>Side doing the detecting</td></tr>
 <tr><td>UnitEntersArea</td><td>TargetFilter</td><td>See below</td></tr>
 <tr><td></td><td>Area</td><td>Table of reference points</td></tr>
 <tr><td></td><td>ETOA</td><td>Earliest date/time of arrival</td></tr>
@@ -234,6 +236,11 @@ In addtion, <code>ScenEdit_GetEvent(EventDescriptionOrID, level)</code> has been
 Use level as: <br>
 0 - all details, 1 - triggers, 2 - conditions, 3 - actions, 4 - event detail
 
+</p>
+<p>Special variables:
+_enumTable_ - List of enumerated variable names and values <br>
+_errfnc_ - Lua Function in which error occurred <br>
+_errmsg_ - Error message from Lua Function failure <br>
 </p>
 </body>
 </html>

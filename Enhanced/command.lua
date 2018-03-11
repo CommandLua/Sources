@@ -134,7 +134,7 @@ For each field, adding the suffix "_player_editable" determines if the player ca
 Set the doctrine of the designated object.
 
 This function uses selector to find the thing to modify, then modifies the doctrine of that object based on the given object.
- Can be used to affect doctrine for Side, Mission, Unit/Group
+ Can be used to affect doctrine for Side, Mission, Unit/Group.
 
 @param[type=DoctrineSelector] selector The selector for the object to modify.
 @param[type=Doctrine] doctrine A table of doctrines to update
@@ -412,6 +412,15 @@ Imports an inst file.
 @param[type=string] filename The filename of the inst file
 ]]
 function ScenEdit_ImportInst(side, filename) end
+
+--[[--
+Export unit(s) to an inst file.
+
+@param[type=string] side The side to import the inst file as
+@param[type=table] unitList list of unit(s) to create as INST file
+@param[type=table] fileData Table of { filename, name, comment } for the INST file
+]]
+function ScenEdit_ExportInst(side, unitList, fileData) end
 
 
 --[[-- Get details of a mission.
@@ -735,7 +744,7 @@ Arc()
 
  <style>
  tr { border: 1px solid black;}
- td { padding: .5em; }
+ td { padding: .5em; }
  </style>
  <table style="border-spacing: 0.5rem;">
 <tr><td>None </td><td> 1001</td></tr>
@@ -955,7 +964,7 @@ function ScenEdit_SetWeather(temperature, rainfall, undercloud, seastate) end
 @field[type=number] seastate  Sea state
 
 ]]
-
+
 --[[-- Get the current weather conditions.
 
 
@@ -1071,7 +1080,7 @@ Show a message box with a passed string.
  2 = Abort, Retry, and Ignore buttons.
  3 = Yes, No, and Cancel buttons
  4 = Yes and No buttons.
- 5 = Retry and Cancel buttons.
+ 5 = Retry and Cancel buttons.
 
 ]]
 function ScenEdit_MsgBox(string, style) end
@@ -1123,6 +1132,7 @@ SideSelector = {
 @field[type=string}] guid Side guid
 @field[type=string}] awareness Side awareness
 @field[type=string}] proficiency Side proficiency
+@field[type=bool}] switchto Change game side to above (only applicable with SetSideOptions)
 ]]
 
 
@@ -1282,7 +1292,7 @@ function ScenEdit_DeleteUnit(unit)end
 
 
 --[[-- Kill unit.
- ... and triggers event.
+ ... and triggers event.
 
 @function ScenEdit_KillUnit(unit)
 @param[UnitSelector] unit 
@@ -1488,7 +1498,7 @@ This will get the information about an active unit or a contact unit
 @param[type=UnitSelector] ActiveOrContact The unit selector to interrogate
 @return[type=Unit] The information associated with the unit
 ]]
-function VP_GetUnit(ActiveOrContact) end
+function VP_GetUnit(ActiveOrContact) end
 
 
 --[[-- Contact selector.
@@ -1663,6 +1673,7 @@ The value is retrieved by @{ScenEdit_GetKeyValue}.
 
 @param[type=string] key The key to associate with
 @param[type=string] value The value to associate
+@param[type=bool] forCampaign Pass the store to next scenario in campaign. Optional, default = false
 @usage ScenEdit_SetKeyValue("A","B")
 ScenEdit_GetKeyValue("A") -- returns "B"
 ]]
@@ -1674,11 +1685,24 @@ function ScenEdit_SetKeyValue(key, value) end
 This function retrieves a value put into the store by @{ScenEdit_SetKeyValue}. The keys must be identical.
 
 @param[type=string] key The key to fetch the associated value of
+@param[type=bool] forCampaign Read from the store being passed to next scenario in campaign. Optional, default = false
 @return[type=string] The value associated with the key. "" if none exists.
 @usage ScenEdit_SetKeyValue("A","2")
 ScenEdit_GetKeyValue("A") -- returns "2"
 ]]
 function ScenEdit_GetKeyValue(key) end
+
+
+--[[-- Clears a key
+
+ .. or all keys from the persistent key store.
+
+@param[type=string] key The key to clear or empty for all
+@param[type=bool] forCampaign Use key store for passing ed to next scenario in campaign. Optional, default = false
+@return[type=bool] Success or failure.
+@usage ScenEdit_ClearKeyValue("A")
+]]
+function ScenEdit_ClearKeyValue(key) end
 
 
 --[[-- Has the scenario started?
@@ -1949,7 +1973,7 @@ td { padding: .5em; }
 @field[type=bool] FilterOut True to filtered out contact
 @field[type={ Weather } ] weather Table of weather parameters (temp, rainfall, underrain, seastate)
 @field[type={ table } ] BDA Table of battle damage assessment (fires, flood, structural)
-@field[type={ table } ] emissions Table {name, age, solid} of detected emmissions from contact 
+@field[type={ Emissions } ] emissions Table of detected emmissions from contact 
 @field[type={ table } ] detectionBy Table of how long ago was detected by type (radar, esm, visual, infrared, sonaractive, sonarpassive) 
 @field[type={ table } ] targetedBy Table of unit guids that have this contact as a target
 @field[type={ table } ] firingAt Table of contact guids that this contact is firing at
@@ -1971,6 +1995,19 @@ td { padding: .5em; }
 @field[type=number] missile_defence Applicable to Facility and Ships
 ]]
 
+--[[-- Contact emission 
+ .. details
+ 
+@table Emissions
+@field[type=string] name
+@field[type=number] age  Time detection held
+@field[type=string] solid  Precise detected (True/false)
+@field[type=number] sensor_dbid Databse id. 
+@field[type=string] sensor_name Sensor name. 
+@field[type=string] sensor_type Sensor type
+@field[type=string] sensor_role Sensor role
+@field[type=number] sensor_maxrange Sensor range
+]]
 
 --[[-- Event details
 . 
@@ -2146,6 +2183,7 @@ td { padding: .5em; }
   .. options; these are updated by ScenEdit_SetMission()
  
 @table PatrolMission
+@field[type=string] type Subtype of mission (ASW = 'asw', ASuW_Naval = 'naval', AAW = 'aaw', ASuW_Land = 'land', ASuW_Mixed = 'mixed', SEAD = 'sead', SeaControl = 'sea')
 @field[type=bool] oneThirdRule True if activated
 @field[type=bool] checkOPA True if can investigate outside zones
 @field[type=bool] checkWWR True if can investigate within weapon range
@@ -2184,6 +2222,7 @@ td { padding: .5em; }
   .. options; these are updated by ScenEdit_SetMission(). Note that these are split between the escorts and strikers
  
 @table StrikeMission
+@field[type=string] type  Subtype of mission (Air_Intercept = 'air', Land_Strike = 'land', Maritime_Strike = 'sea', Sub_Strike = 'sub')
 @field[type=Size] escortFlightSizeShooter 
 @field[type=number] escortMinShooter
 @field[type=number] escortMaxShooter

@@ -18,8 +18,8 @@
 @rem remove old lua file
 @del %DESTN%\vb_lua.lua 2>%TEMP%/null
 @rem add header details
-gawk -f %MYHOME%/CMANO_pre.awk %TEMP%/vb_lua2.txt >"%MYHOME%/vb_lua.lua"
-@call ldoc_start.bat -c %MYHOME%/config.ld -l %MYHOME% -d %DESTN% %MYHOME%/vb_lua.lua
+gawk -f %MYHOME%/CMANO_pre.awk %TEMP%/vb_lua2.txt >"%MYHOME%/command_lua.lua"
+@call ldoc_start.bat -c %MYHOME%/config.ld -l %MYHOME% -d %DESTN% %MYHOME%/command_lua.lua
 @cp %DESTN%\index.html %TEMP%
 @rem replace <em></em> with _ as these are being incoorectly set by ldoc
 @awk '{ gsub(/^\074em\076+/,"_");print }' %TEMP%\index.html |awk '{ gsub(/^\074\/em\076+/,"_");print }' > %DESTN%\index.html

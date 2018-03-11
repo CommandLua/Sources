@@ -8,7 +8,7 @@ topics = '.\\Samples'
 --file = { ".\\mock" } 
 --kind_names={topic='Examples',module='Reference'}
 kind_names={module='Reference'}
-full_description = 'Lua is a case sensitve language. For direct access to object properties as in \'unit.name\', the property will be programmed to be in lower case. \n When accessing the properties through the Functions below, both the keyword/property and the value are case insensitive; the code will worry about matching them up.'
+full_description = 'Lua is a case sensitive language. For direct access to object properties as in \'unit.name\', the property will be programmed to be in lower case. \n When accessing the properties through the Functions below, both the keyword/property and the value are case insensitive; the code will worry about matching them up.'
 not_luadoc=true
 sort=true
 custom_tags={'remark',title='Remarks'}

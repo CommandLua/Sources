@@ -1,0 +1,3 @@
+Use this to reference other tags
+@{ex1.lua|sample}
+This will look for a tag 'ex1.lua.html' and show it as a link called 'sample'. Useful for directly linking to a sample Lua code snippet.
