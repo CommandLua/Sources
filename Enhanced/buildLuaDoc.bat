@@ -9,11 +9,12 @@
 @set DESTN=C:\Users\Michael\Documents\GitHub\CommandLua.github.io\beta
 @echo Home folder = %MYHOME%
 @echo Using temporary folder = %TEMP%
-@call ldoc_start.bat -v -c %MYHOME%/config.ld -l %MYHOME% -d %DESTN% %MYHOME%/command.lua
+@copy  %MYHOME%\\command.lua + %MYHOME%\\command.luadoc %TEMP%\\command_ext.lua
+@call ldoc_start.bat -v -c %MYHOME%/config.ld -l %MYHOME% -d %DESTN% %TEMP%/command_ext.lua
 @cp %DESTN%\index.html %TEMP%
-@rem replace <em></em> with _ as these are being incoorectly set by ldoc
+@rem replace <em></em> with _ as these are being incorrectly set by ldoc
 @awk '{ gsub(/^\074em\076+/,"_");print }' %TEMP%\index.html |awk '{ gsub(/^\074\/em\076+/,"_");print }' > %DESTN%\index.html
 @rem cleanup temporary files
-@del %TEMP%\vb_lua.txt %TEMP%\vb_lua2.txt %TEMP%\vb_lua3.txt 2>%TEMP%/null
+@del %TEMP%\vb_lua.txt %TEMP%\vb_lua2.txt %TEMP%\vb_lua3.txt %TEMP%\\command_ext.lua 2>%TEMP%/null
 @set PATH=%SAVEPATH%
 pause

@@ -80,7 +80,7 @@ For each field, adding the suffix "_player_editable" determines if the player ca
 @param[type=string] refuel_unrep_allied Yes(0), Yes_ReceiveOnly(1), Yes_DeliverOnly(2), No(3)
 @param[type=string] fuel_state_planned Bingo(0), Joker10Percent(1), Joker20Percent(2), Joker25Percent(3), Joker30Percent(4), Joker40Percent(5), Joker50Percent(6), Joker60Percent(7), Joker70Percent(8), Joker75Percent(9), Joker80Percent(10), Joker90Percent(11)
 @param[type=string] fuel_state_rtb No(0), YesLastUnit(1), YesFirstUnit(2), YesLeaveGroup(3)
-@param[type=string] weapon_state_planned See Weapon Doctrine table below
+@param[type=WeaponDoctrine] weapon_state_planned See Weapon Doctrine table below
 @param[type=string] weapon_state_rtb No(0), YesLastUnit(1), YesFirstUnit(2), YesLeaveGroup(3)
 @param[type=string] gun_strafing No(0), Yes(1)
 @param[type=string] jettison_ordnance  No(0), Yes(1)
@@ -98,9 +98,11 @@ For each field, adding the suffix "_player_editable" determines if the player ca
 @param[type=string] deploy_on_fuel Ignore(0) Bingo(1), Percent25(2), Percent50(3), Percent75(4), Percent100(5) 
 @param[type=string] deploy_on_attack  Ignore(0), Exhausted(1), Percent25(2), Percent50(3), Percent75(4), Percent100(5), LoadFullWeapons(6) 
 @param[type=string] deploy_on_defence Ignore(0), Exhausted(1), Percent25(2), Percent50(3), Percent75(4), Percent100(5), LoadFullWeapons(6) 
-
-
- <b>Weapon doctrine:</b>
+]]
+ 
+--[[-- 
+ @DataType WeaponDoctrine
+ 
  <style>
  tr:not(:first-child) { border-top: 1px solid black;}
  td { padding: .5em; }
@@ -134,7 +136,7 @@ For each field, adding the suffix "_player_editable" determines if the player ca
 Set the doctrine of the designated object.
 
 This function uses selector to find the thing to modify, then modifies the doctrine of that object based on the given object.
- Can be used to affect doctrine for Side, Mission, Unit/Group.
+ Can be used to affect doctrine for Side, Mission, Unit/Group
 
 @param[type=DoctrineSelector] selector The selector for the object to modify.
 @param[type=Doctrine] doctrine A table of doctrines to update
@@ -743,8 +745,8 @@ Arc()
 @DataType TargetTypeWRA
 
  <style>
- tr { border: 1px solid black;}
- td { padding: .5em; }
+ tr { border: 1px solid black;}
+ td { padding: .5em; }
  </style>
  <table style="border-spacing: 0.5rem;">
 <tr><td>None </td><td> 1001</td></tr>
@@ -1080,7 +1082,7 @@ Show a message box with a passed string.
  2 = Abort, Retry, and Ignore buttons.
  3 = Yes, No, and Cancel buttons
  4 = Yes and No buttons.
- 5 = Retry and Cancel buttons.
+ 5 = Retry and Cancel buttons.
 
 ]]
 function ScenEdit_MsgBox(string, style) end
@@ -1186,10 +1188,10 @@ function ScenEdit_SpecialMessage(side, message) end
 @field[type=Latitude] latitude Not required if a `base` is defined
 @field[type=Longitude] longitude Not required if a `base` is defined
 @field[type=string] base Unit base name or GUID where the unit will be 'hosted' (applicable to AIR, SHIP, SUB)
-@field[type=number] loadout Aircraft database loadout id (applicable to AIR)
+@field[type=number] loadoutid Aircraft database loadout id (applicable to AIR)
 @field[type=number] altitude Unit altitude (applicable to AIR)
-@field[type=string] guid Optional custom GUID to override auto one
 @field[type=number] orbit Orbit index (applicable to SATELLITE)
+@field[type=string] guid Optional custom GUID to override auto one
 ]]
 
 --[[--
@@ -1290,9 +1292,9 @@ function ScenEdit_SetUnit(unit)end
 ]]
 function ScenEdit_DeleteUnit(unit)end
 
-
---[[-- Kill unit.
- ... and triggers event.
+
+--[[-- Kill unit.
+ ... and triggers event.
 
 @function ScenEdit_KillUnit(unit)
 @param[UnitSelector] unit 
@@ -1464,7 +1466,7 @@ function  ScenEdit_AddZone(sideName, zoneType , table) end
  .. list from 'mother' to 'child' 
 
 @param[type=UnitSelector] fromUnit The unit with cargo
-@param[type=UnitSelector] toUnit The unit to get cargo
+@param[type=UnitSelector] toUnit The unit to get cargo
 @param[type={ Cargo }] cargoList List of cargo to transfer: table of {guids}, or { {DBID, number}}
 @return[type=boolen] Successful or not
 ]]
@@ -1498,7 +1500,7 @@ This will get the information about an active unit or a contact unit
 @param[type=UnitSelector] ActiveOrContact The unit selector to interrogate
 @return[type=Unit] The information associated with the unit
 ]]
-function VP_GetUnit(ActiveOrContact) end
+function VP_GetUnit(ActiveOrContact) end
 
 
 --[[-- Contact selector.
@@ -1677,7 +1679,7 @@ The value is retrieved by @{ScenEdit_GetKeyValue}.
 @usage ScenEdit_SetKeyValue("A","B")
 ScenEdit_GetKeyValue("A") -- returns "B"
 ]]
-function ScenEdit_SetKeyValue(key, value) end
+function ScenEdit_SetKeyValue(key, value, forCampaign) end
 
 
 --[[-- Gets the value for a key from the persistent key store.
@@ -1690,7 +1692,7 @@ This function retrieves a value put into the store by @{ScenEdit_SetKeyValue}. T
 @usage ScenEdit_SetKeyValue("A","2")
 ScenEdit_GetKeyValue("A") -- returns "2"
 ]]
-function ScenEdit_GetKeyValue(key) end
+function ScenEdit_GetKeyValue(key, forCampaign) end
 
 
 --[[-- Clears a key
@@ -1702,7 +1704,7 @@ function ScenEdit_GetKeyValue(key) end
 @return[type=bool] Success or failure.
 @usage ScenEdit_ClearKeyValue("A")
 ]]
-function ScenEdit_ClearKeyValue(key) end
+function ScenEdit_ClearKeyValue(key, forCampaign) end
 
 
 --[[-- Has the scenario started?
@@ -1978,7 +1980,7 @@ td { padding: .5em; }
 @field[type={ table } ] targetedBy Table of unit guids that have this contact as a target
 @field[type={ table } ] firingAt Table of contact guids that this contact is firing at
 @field[type={ table } ] firedOn Table of guids that are firing on this contact
-@field[type=method] DropContact() Drops contact from the reporting side
+@field[type=method] DropContact() Drops contact from the reporting side
 @field[type=method] inArea({area}) Is contact in the 'area' defined by table of RPs (true/false)
 ]]
 
@@ -2177,6 +2179,11 @@ td { padding: .5em; }
 @field[type=bool] activeEMCON
 @field[type=bool] tankerOneTime
 @field[type=string] tankerMaxReceivers
+@field[type=string] ccenable
+@field[type=string] ccallowqra
+@field[type=string] ccflightgenmethod
+@field[type=string] ccstationtime
+@field[type=string] ccoverlap
 ]]
 
 --[[-- PatrolMission.
@@ -2216,6 +2223,12 @@ td { padding: .5em; }
 @field[type=bool] useGroupSize True if min size required
 @field[type={ name|guid }] prosecutionZone Table of reference point names and/or GUIDs
 @field[type={ name|guid }] patrolZone  Table of reference point names and/or GUIDs
+@field[type=string] FlightsToInvestigate
+@field[type=string] FlightsToEngage
+@field[type=string] WingmanEngageDistance
+@field[type=string] BoatsToInvestigate
+@field[type=string] BoatsToEngage
+@field[type=string] GroupMemberEngageDistance
 ]]
 
 --[[-- StrikeMission.
@@ -2244,8 +2257,16 @@ td { padding: .5em; }
 @field[type=bool] strikeAutoPlanner True if activated
 @field[type=bool] strikePreplan True if pre-planned target list only
 @field[type=number] strikeRadarUasge Radar usage
-@field[type=number] strikeMinDist  Strike minimum distance
-@field[type=number] strikeMaxDist  Strike maximum distance
+@field[type=number] strikeMinDistAircraft  Strike minimum distance
+@field[type=number] strikeMaxDistAircraft  Strike maximum distance
+@field[type=number] strikeMinDistShip  Strike minimum distance
+@field[type=number] strikeMaxDistShip  Strike maximum distance
+@field[type=string] FlightsToInvestigate
+@field[type=string] FlightsToEngage
+@field[type=string] WingmanEngageDistance
+@field[type=string] BoatsToInvestigate
+@field[type=string] BoatsToEngage
+@field[type=string] GroupMemberEngageDistance
 ]]
 
 --[[-- CargoMission.
