@@ -1,0 +1,23 @@
+--[[-- 
+List fields in a wrapper.
+
+To get a list of fields in a Command Lua wrapper<br>
+1. Get an object wrapper (eg unit = ScenEdit_GetUnit())<br>
+2. List the properties ( eg print(unit.fields) )<br>
+3. Properties consists of (a) name, (b) type of property, and (c) if you set a value for it (eg unit fields =
+{ property_29 = '.damage , LuaTable , False', 
+property_19 = '.dbid , Int32 , False', 
+method_1 = ':delete , System.Void', 
+property_28 = '.loadoutdbid , Object , False',
+method_2 = ':inArea , System.Boolean,
+property_9 = '.course , LuaTable , True' ...<br>
+-> property_29 : unit.damage is a Lua table and you can't set a value as in unit.damage = {}<br>
+-> property_19 : unit.dbid is a number and you can't set a value as in unit.dbid = 12<br>
+-> property_28 : unit.loadoutdbid is a generic object and you can't set a value as in unit.loadoutdbid = 1234<br>
+-> property_9  : unit.course is a Lua table and you can set a value as in unit.course = {...}<br>
+-> method_1    : unit:delete is a Lua method/function and returns nothing<br>
+-> method_2    : unit:inArea is a Lua method/function and returns true/false
+
+@Notes WrapperFields
+
+]]

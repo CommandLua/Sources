@@ -37,7 +37,7 @@
 --Note also, that the Lua history log should also record the event script errors.
 --
 --
---<b>Release: 1.14 </b>
+--<b>Release: 1.14.9 </b>
 --
 
 --[[-- Selects a doctrine.
@@ -434,7 +434,7 @@ function ScenEdit_ExportInst(side, unitList, fileData) end
 @usage local mission = ScenEdit_GetMission('USA','CV CAP Left')
 ]]
 
-
+
 --[[-- New mission options.
 
 @Selector NewMission
@@ -841,7 +841,7 @@ Arc()
 <tr><td>Air\_Base\_Single\_Unit\_Airfield </td><td> 5801</td></tr>
  </table>
 
-]]
+]]
 TargetTypeWRA()
 
 --[[-- Select a unit.
@@ -941,6 +941,14 @@ Sets the loadout for a unit
 @return[type=bool] True
 ]]
 function ScenEdit_SetLoadout(loadoutinfo)end
+
+--[[--
+Gets the loadout for a unit
+
+@param[type=LoadoutInfo] loadoutinfo The loadout information to apply
+@return[type=Loadout] Loadout wrapper
+]]
+function ScenEdit_GetLoadout(loadoutinfo)end
 
 
 --[[-- Set the current weather conditions.
@@ -1157,6 +1165,15 @@ function ScenEdit_GetSideIsHuman(sidename)end
 
 
 --[[--
+Sets the scenario time (UTC).
+
+@param[type=string] new_time The desired UTC datetime as a table in MM:DD:YYYY & HH:MM:SS or MM.DD.YYYY & HH.MM.SS format
+@usage ScenEdit_SetTime({Date="2.12.2007", Time="22.46.23"})
+]]
+function ScenEdit_SetTime(new_time) end
+
+
+--[[--
 Sets a given side's score.
 
 @param[type=string] side The name/GUID of the side
@@ -1170,11 +1187,13 @@ function ScenEdit_SetScore(side,score,reason) end
 
 --[[--
 	Displays a special message consisting of the HTML text `message` to side `side.
+ Can include an optional location to jump to
 
 @param[type=string] side The side name/guid to display the message on
 @param[type=string] message The HTML text to display to the player
+@param[type=string] location [Optional] Location as a table to jump to {lon,lat}
 ]]
-function ScenEdit_SpecialMessage(side, message) end
+function ScenEdit_SpecialMessage(side, message [,location]) end
 
 --[[-- New unit selector.
 
@@ -1210,15 +1229,17 @@ function ScenEdit_AddUnit(unit)end
 --[[-- Update unit sensor/mount/weapon selector.
 
  ... lists minimum fields required. Other fields from @{Unit} may be included.
+ For the 'delta' mode, the function willl look for a matching GUID (or unit name if no GUID match) in the INI file.
 
 @Selector UpdateUnit
 @field[type=string] guid The unit identifier
-@field[type=string] mode The function to perform (add_ sensor,remove_ sensor,add_ mount,remove_ mount,add_ weapon,remove_ weapon,add_comms,remove_comms)
+@field[type=string] mode The function to perform (add_ sensor,remove_ sensor,add_ mount,remove_ mount,add_ weapon,remove_ weapon,add_comms,remove_comms,delta)
 @field[type=number] dbid The database id of the item to add [required for 'add_' mode]. If used with 'remove_' mode, and no sensorid/mountid, the first matching DBID will be removed.
 @field[type=string] sensorid The identifier (guid) of the particular sensor to remove [required for remove_ sensor mode]
 @field[type=string] mountid The identifier (guid) of the particular mount to remove [required for remove_ mount mode]
 @field[type=string] weaponid The identifier (guid) of the particular weapon to remove [required for remove_ weapon mode]. Must have a preceeding mountid to update
 @field[type=string] commsid The identifier (guid) of the particular communication device to remove [required for remove_ mount mode]
+@field[type=string] file File name of the INI delta to apply [required for delta mode]
 @field[type={ Arcs },opt ] arc_detect The effective arcs for the particular sensor to detect in [override defaults]
 @field[type={ Arcs },opt ] arc_track The effective arcs for the particular sensor to track/illuminate in [override defaults]
 @field[type={ Arcs },opt ] arc_mount The effective arcs for the particular mount  [override defaults]
@@ -1231,9 +1252,31 @@ Update items on a unit.
 @return[type=Unit] The updated unit
 @usage ScenEdit_UpdateUnit({guid='2cd64757-1b66-4609-ad56-df41bee652e5',mode='add_sensor',dbid=3352})
 @usage ScenEdit_UpdateUnit({guid='2cd64757-1b66-4609-ad56-df41bee652e5',mode='remove_sensor',dbid=3352,sensorId='871aea14-d963-4052-a7fc-ed36e97bb732'})
+@usage ScenEdit_UpdateUnit({guid='2cd64757-1b66-4609-ad56-df41bee652e5',mode='delta',file='new.ini'})
 
 ]]
 function ScenEdit_UpdateUnit(options)end
+
+--[[-- Update unit cargo selector.
+
+ ... lists minimum fields required. Other fields from @{Unit} may be included.
+
+@Selector UpdateUnitCargo
+@field[type=string] guid The unit identifier
+@field[type=string] mode The function to perform (add_ cargo,remove_ cargo)
+@param[type={ Cargo }] cargoList List of cargo to update: table of {guids}, or { {number, DBID}}
+]]
+
+--[[--
+Update cargo on a unit.
+
+@param[type=UpdateUnitCargo] options The unit cargo details to update
+@return[type=Unit] The updated unit
+@usage ScenEdit_UpdateUnitCargo({guid='2cd64757-1b66-4609-ad56-df41bee652e5', mode='add_cargo', cargo={{5, 752},{700}} })
+@usage ScenEdit_UpdateUnitCargo({guid='2cd64757-1b66-4609-ad56-df41bee652e5', mode='remove_cargo', cargo={'871aea14-d963-4052-a7fc-ed36e97bb732',{5,752}} })
+
+]]
+function ScenEdit_UpdateUnitCargo(options)end
 
 
 --[[--
@@ -1275,7 +1318,7 @@ function ScenEdit_GetContact(contact)end
 Sets the properties of a unit that already exists.
 
 @param[type=Unit] unit The unit to edit. Must be at least a selector.
-@return[type=Unit] A complete descriptor for the added unit
+@return[type=Unit] A complete descriptor for the added unit
 @usage ScenEdit_SetUnit({side="United States", unitname="USS Test", lat = 5})
 @usage ScenEdit_SetUnit({side="United States", unitname="USS Test", lat = 5})
 @usage ScenEdit_SetUnit({side="United States", unitname="USS Test", lat = 5, lon = "N50.20.10"})
@@ -1292,8 +1335,8 @@ function ScenEdit_SetUnit(unit)end
 ]]
 function ScenEdit_DeleteUnit(unit)end
 
-
---[[-- Kill unit.
+
+--[[-- Kill unit.
  ... and triggers event.
 
 @function ScenEdit_KillUnit(unit)
@@ -1466,8 +1509,8 @@ function  ScenEdit_AddZone(sideName, zoneType , table) end
  .. list from 'mother' to 'child' 
 
 @param[type=UnitSelector] fromUnit The unit with cargo
-@param[type=UnitSelector] toUnit The unit to get cargo
-@param[type={ Cargo }] cargoList List of cargo to transfer: table of {guids}, or { {DBID, number}}
+@param[type=UnitSelector] toUnit The unit to get cargo
+@param[type={ Cargo }] cargoList List of cargo to transfer: table of {guids}, or { {number,DBID}, [{DBID}]}
 @return[type=boolen] Successful or not
 ]]
 function ScenEdit_TransferCargo(fromUnit, toUnit, cargoList) end
@@ -1477,7 +1520,7 @@ function ScenEdit_TransferCargo(fromUnit, toUnit, cargoList) end
   
 
 @param[type=UnitSelector] fromUnit The unit with cargo
-@param[type={ Cargo }] cargoList List of cargo to unload: table of {guids}, or { {DBID, number}}
+@param[type={ Cargo }] cargoList List of cargo to unload: table of {guids}, or { {number, DBID}}
 @return[type=boolen] Successful or not
 ]]
 function ScenEdit_UnloadCargo(fromUnit, cargoList) end
@@ -1647,6 +1690,14 @@ function ScenEdit_EventX() end
 function ScenEdit_CurrentTime() end
 
 
+--[[-- Gets the exe build number.
+
+@return[type=string] The build number of this exe
+@function GetBuildNumber
+]]
+
+
+
 --[[-- Name of the scenario.
 
 @return[type=string] The title of the scenario
@@ -1798,12 +1849,13 @@ function ScenEdit_EndScenario() end
 --[[-- Weapon loads on mount or in magazine.
 
 @table WeaponLoaded
- @field[type=string]wpn_guid GUID
- @field[type=string]wpn_current Current loads available
- @field[type=string]wpn_maxcap Maximum loads 
- @field[type=string]wpn_default Default loads (to fill out)
- @field[type=string]wpn_dbid Database ID
- @field[type=string]wpn_name Name
+ @field[type=string] wpn_guid GUID
+ @field[type=string] wpn_current Current loads available
+ @field[type=string] wpn_maxcap Maximum loads 
+ @field[type=string] wpn_default Default loads (to fill out)
+ @field[type=string] wpn_name Name
+ @field[type=string] wpn_dbid Database ID of weapon
+ @field[type=string] wpn_type Type of weapon
 ]]
 
 --[[-- Component.
@@ -1817,6 +1869,19 @@ function ScenEdit_EndScenario() end
  @field[type=string] comp_status Status 
  @field[type=string] comp_statusR Reason why inoperative  [if not operational]
  @field[type=string] comp_damage Damage Severity   [if not operational]
+
+]]
+
+--[[-- Facility.
+
+ .. air or dock facility
+@table Facility
+ @field[type=string] guid GUID
+ @field[type=number] dbid Database ID
+ @field[type=string] name Name
+ @field[type=number] type Type
+ @field[type=string] status Status 
+ @field[type=number] capacity Units present
 
 ]]
 
@@ -1874,6 +1939,7 @@ function ScenEdit_EndScenario() end
 @field[type=method] delete() Immediately removes unit object
 @field[type=method] filterOnComponent(`type`) Filters unit on `type` of component and returns a @{Component} table.
 @field[type=method] rangetotarget('contactid') Calculate flat distance to a contact location
+@field[type={ Facility } ] hostFacility Where unit is hosted
 
  ScenEdit only
 @field[type=bool] refuel Trigger the unit to attempt an UNREP
@@ -1980,7 +2046,7 @@ td { padding: .5em; }
 @field[type={ table } ] targetedBy Table of unit guids that have this contact as a target
 @field[type={ table } ] firingAt Table of contact guids that this contact is firing at
 @field[type={ table } ] firedOn Table of guids that are firing on this contact
-@field[type=method] DropContact() Drops contact from the reporting side
+@field[type=method] DropContact() Drops contact from the reporting side
 @field[type=method] inArea({area}) Is contact in the 'area' defined by table of RPs (true/false)
 ]]
 
@@ -2010,6 +2076,135 @@ td { padding: .5em; }
 @field[type=string] sensor_role Sensor role
 @field[type=number] sensor_maxrange Sensor range
 ]]
+
+--[[-- Loadout.
+
+
+@Wrapper Loadout
+ @field[type=string] dbid ID from database
+ @field[type=string] name Name of loadout
+ @field[type=table] roles Table of loadout usage {@{LoadoutRole}, @{LoadoutTimeOfDay}, @{LoadoutWeather}}
+ @field[type={ WeaponLoaded } ] weapons Table of weapons in loadout
+
+]]
+
+ 
+--[[-- 
+ @DataType LoadoutRole
+ 
+ None = 1001
+ Intercept_BVR = 2001
+ Intercept_WVR = 2002
+ AirSuperiority_BVR = 2003
+ AirSuperiority_WVR = 2004
+ PointDefence_BVR = 2005
+ PointDefence_WVR = 2006
+ GunsOnly = 2007
+ AntiSatellite_Intercept = 2101
+ AirborneLaser = 2102
+ LandNaval_Strike = 3001
+ LandNaval_Standoff = 3002
+ LandNaval_SEAD_ARM = 3003
+ LandNaval_SEAD_TALD = 3004
+ LandNaval_DEAD = 3005
+ LandOnly_Strike = 3101
+ LandOnly_Standoff = 3102
+ LandOnly_SEAD_ARM = 3103
+ LandOnly_SEAD_TALD = 3104
+ LandOnly_DEAD = 3105
+ NavalOnly_Strike = 3201
+ NavalOnly_Standoff = 3202
+ NavalOnly_SEAD_ARM = 3203
+ NavalOnly_SEAD_TALD = 3204
+ NavalOnly_DEAD = 3205
+ BAI_CAS = 3401
+ Buddy_Illumination = 3501
+ OECM = 4001
+ AEW = 4002
+ CommandPost = 4003
+ ChaffLaying = 4004
+ SearchAndRescue = 4101
+ CombatSearchAndRescue = 4102
+ MineSweeping = 4201
+ MineRecon = 4202
+ NavalMineLaying = 4301
+ ASW_Patrol = 6001
+ ASW_Attack = 6002
+ Forward_Observer = 7001
+ Area_Surveillance = 7002
+ Armed_Recon = 7003
+ Unarmed_Recon = 7004
+ Maritime_Surveillance = 7005
+ Paratroopers = 7101
+ Troop_Transport = 7102
+ Cargo = 7201
+ AirRefueling = 8001
+ Training = 8101
+ TargetTow = 8102
+ TargetDrone = 8103
+ Ferry = 9001
+ Unavailable = 9002
+ Reserve = 9003
+ ArmedFerry = 9004
+]]
+
+ 
+--[[-- 
+ @DataType LoadoutTimeOfDay
+ None = 1001
+ DayNight = 2001
+ NightOnly = 2002
+ DayOnly = 2003
+]]
+
+ 
+--[[-- 
+ @DataType LoadoutWeather
+ None = 1001
+ AllWeather = 2001
+ LimitedAllWeather = 2002
+ ClearWeather = 2003
+]]                     
+
+ 
+--[[-- 
+ @DataType WeaponType
+        None = 1001
+        GuidedWeapon = 2001
+        Rocket = 2002
+        IronBomb = 2003
+        Gun = 2004
+        Decoy_Expendable = 2005
+        Decoy_Towed = 2006
+        Decoy_Vehicle = 2007
+        TrainingRound = 2008
+        Dispenser = 2009
+        ContactBomb_Suicide = 2010
+        ContactBomb_Sabotage = 2011
+        GuidedProjectile = 2012
+        SensorPod = 3001
+        DropTank = 3002
+        BuddyStore = 3003
+        FerryTank = 3004
+        Torpedo = 4001
+        DepthCharge = 4002
+        Sonobuoy = 4003
+        BottomMine = 4004
+        MooredMine = 4005
+        FloatingMine = 4006
+        MovingMine = 4007
+        RisingMine = 4008
+        DriftingMine = 4009
+        DummyMine = 4011
+        HeliTowedPackage = 4101
+        RV = 5001
+        Laser = 6001
+        HGV = 8001
+        Cargo = 9001
+        Troops = 9002
+        Paratroops = 9003
+
+]]                     
 
 --[[-- Event details
 . 
